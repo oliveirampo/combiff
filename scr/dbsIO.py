@@ -1,0 +1,77 @@
+from abc import ABC, abstractmethod
+import pandas as pd
+import sys
+import os
+
+
+import dbs
+import myExceptions
+
+
+class relationParser(ABC):
+    @abstractmethod
+    def readRelation(self):
+        pass
+
+
+class parserDefault(relationParser):
+    def readRelation(self, larsCode, dbsRelation):
+        rel = dbsRelation.rel
+        columns = dbsRelation.columns
+
+        fileName = '{}/{}_{}.rel'.format(dbs.dbsEntry.path, larsCode, rel)
+        if not os.path.exists(fileName):
+            raise myExceptions.NoFile(fileName)
+
+        with open(fileName) as dbsFile:
+            lines = [row.strip().lower().split() for row in dbsFile.readlines()]
+
+        i = 0
+        while i < len(lines):
+            row = lines[i]
+
+            if len(row) == 0:
+                i += 1
+
+            elif row[0].startswith('#'):
+                i += 1
+
+            elif row[0] == '@tab':
+                dfTable = readTable(i + 1, lines, columns)
+                i = len(lines)
+
+            else:
+                i += 1
+
+        return dfTable
+
+
+def readTable(i, lines, columns):
+    columns = columns.strip().split()
+    columns = columns[1:]
+    table = []
+
+    while i < len(lines):
+        row = lines[i]
+
+        if len(row) == 0:
+            i += 1
+
+        elif row[0] == '#':
+            i = len(lines)
+
+        elif row[0] == '@cap':
+            i = len(lines)
+
+        else:
+            if len(row) != len(columns):
+                print('Wrong number of columns.')
+                sys.exit(666)
+
+            table.append(row)
+            i += 1
+
+    dfTable = pd.DataFrame(table, columns=columns)
+    return dfTable
+
+

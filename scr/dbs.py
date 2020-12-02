@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 import sys
 
-
-import dbsIO
+from scr import dbsIO
 
 
 class abstractFactoryRelation(ABC):
