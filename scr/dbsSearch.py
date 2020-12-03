@@ -19,8 +19,8 @@ def run():
     startTime = datetime.now()
 
     nArgs = len(sys.argv)
-    if nArgs != 4:
-        raise myExceptions.ArgError(nArgs, 4)
+    if nArgs != 3:
+        raise myExceptions.ArgError(nArgs, 3)
 
     # I decided to keep both files (molListFile and enuMolFile)
     # because I can easily comment out entries in molListFile
@@ -29,22 +29,6 @@ def run():
     # molList = np.genfromtxt(molListFile, dtype=None, encoding='utf-8')
     molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles'])
 
-    # file.json
-    enuMolFile = sys.argv[3]
-    if not os.path.exists(enuMolFile):
-        raise myExceptions.NoFile(enuMolFile)
-
-    with open(enuMolFile) as jsonFile:
-        enuData = json.load(jsonFile, object_hook=moleculeDecoder)
-
-    data = OrderedDict()
-    # check if 00_dbsData.json already exists
-    # dbsDataFile = 'inp/00_dbsData.json'
-    # if os.path.exists(dbsDataFile):
-    #     with open(dbsDataFile) as jsonFile:
-    #         data = json.load(jsonFile, object_hook=moleculeDecoder)
-
-    # getData(molList, enuData, data, {})
     dbsFileName = 'inp/dbs.json'
     dbsEntries = getDbsEntries(dbsFileName)
 
