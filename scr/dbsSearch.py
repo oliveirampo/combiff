@@ -49,8 +49,12 @@ def run():
     dbsEntries = getDbsEntries(dbsFileName)
 
     molList = getCids(dbsEntries, molList)
-    print(molList)
     # getCidsofSynonyms(dbsEntries, molList)
+
+    propCod = {'dns': ['YA14.6'], 'hvp': ['AC16.1']}
+    tables = getData(propCod, molList, dbsEntries)
+
+    writeData(tables)
 
     print('\nTotal running time: {}\n'.format(datetime.now() - startTime))
 
@@ -67,12 +71,10 @@ def getDbsEntries(fileName):
 
 
 def getCids(dbsEntries, molList):
-    factory = dbs.createRelationCompound()
-
     for larsCode in dbsEntries:
-        compoundRelation = dbsEntries[larsCode].getCompoundRelation()
+        factory = dbsEntries[larsCode].getFactory('cpd')
         parser = factory.createParser()
-        dfTable = parser.readRelation(larsCode, compoundRelation)
+        dfTable = parser.readRelation()
 
         # match by cas
         df = dfTable[['cid', 'cas', 'nam']]
@@ -86,8 +88,9 @@ def getCids(dbsEntries, molList):
 
     return molList
 
+
 def getCidsofSynonyms(dbsEntries, molList):
-    factory = dbs.createRelationCompound()
+    factory = dbs.dbsEntry.getFactory('cpd')
 
     for larsCode in dbsEntries:
         compoundRelation = dbsEntries[larsCode].getCompoundRelation()
@@ -108,5 +111,43 @@ def getCidsofSynonyms(dbsEntries, molList):
                     sys.exit(666)
 
 
-def getData(molList, enuData, data, dbsSrc):
-    print('TODO')
+def getData(propCod, molList, dbsEntries):
+    # print(molList)
+    columns = molList.columns.tolist()
+    tables = {}
+
+    for prop in propCod:
+        tables[prop] = {}
+
+        for larsCod in propCod[prop]:
+            tables[prop][larsCod] = []
+
+            factory = dbsEntries[larsCod].getFactory(prop)
+            parser = factory.createParser()
+            dfTable = parser.readRelation()
+
+            # match by cid
+            # there will be lots of repeated data
+            cid_options = [col for col in columns if col.startswith('cid_') and col.endswith(larsCod)]
+            for cid in cid_options:
+                tab = pd.merge(molList, dfTable, how='left', left_on=cid, right_on='cid')
+                tab = tab.dropna(subset=[cid])
+                tables[prop][larsCod].append(tab)
+
+    return tables
+
+
+def writeData(tables):
+    dfAll = pd.DataFrame()
+
+    for prop in tables:
+        for larsCode in tables[prop]:
+
+            tab = tables[prop][larsCode]
+            df = pd.concat(tab, ignore_index=True)
+            df = df.drop_duplicates(keep='last')
+
+            fileName = 'data/{}_{}.csv'.format(prop, larsCode)
+            df.to_csv(fileName)
+
+

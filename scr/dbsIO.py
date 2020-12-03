@@ -9,15 +9,24 @@ import myExceptions
 
 
 class relationParser(ABC):
+    def __init__(self, larsCode, rel, col):
+        self.larsCode = larsCode
+        self.rel = rel
+        self.col = col
+
     @abstractmethod
     def readRelation(self):
         pass
 
 
 class parserDefault(relationParser):
-    def readRelation(self, larsCode, dbsRelation):
-        rel = dbsRelation.rel
-        columns = dbsRelation.columns
+    def __init__(self, larsCode, rel, col):
+        super(parserDefault, self).__init__(larsCode, rel, col)
+
+    def readRelation(self):
+        larsCode = self.larsCode
+        rel = self.rel
+        columns = self.col
 
         fileName = '{}/{}_{}.rel'.format(dbs.dbsEntry.path, larsCode, rel)
         if not os.path.exists(fileName):
@@ -73,5 +82,9 @@ def readTable(i, lines, columns):
 
     dfTable = pd.DataFrame(table, columns=columns)
     return dfTable
+
+
+def writeTable(fileName):
+    print(fileName)
 
 

@@ -5,6 +5,13 @@ from scr import dbsIO
 
 
 class abstractFactoryRelation(ABC):
+    def __init__(self, larsCode, prop, rel, var, col):
+        self.larsCode = larsCode
+        self.prop = prop
+        self.rel = rel
+        self.var = var
+        self.col = col
+
     @abstractmethod
     def createRelation(self, rel, var, col):
         pass
@@ -15,53 +22,52 @@ class abstractFactoryRelation(ABC):
 
 
 class createRelationCompound(abstractFactoryRelation):
-    def createRelation(self, rel, var, col):
-        return dbsCompound(rel, var, col)
+    def __init__(self, larsCode, prop, rel, var, col):
+        super(createRelationCompound, self).__init__(larsCode, prop, rel, var, col)
+
+    def createRelation(self):
+        return dbsCompound()
 
     def createParser(self):
-        return dbsIO.parserDefault()
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
 class createRelationDensity(abstractFactoryRelation):
-    def createRelation(self, rel, var, col):
-        return dbsDensity(rel, var, col)
+    def __init__(self, larsCode, prop, rel, var, col):
+        super(createRelationDensity, self).__init__(larsCode, prop, rel, var, col)
+
+    def createRelation(self):
+        return dbsDensity()
 
     def createParser(self):
-        return dbsIO.parserDefault()
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
 class createRelationVaporizationEnthalpy(abstractFactoryRelation):
-    def createRelation(self, rel, var, col):
-        return dbsVaporizationEnthalpy(rel, var, col)
+    def __init__(self, larsCode, prop, rel, var, col):
+        super(createRelationVaporizationEnthalpy, self).__init__(larsCode, prop, rel, var, col)
+
+    def createRelation(self):
+        return dbsVaporizationEnthalpy()
 
     def createParser(self):
-        return dbsIO.parserDefault()
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
 class dbsRelation(ABC):
-    def __init__(self, rel, var, columns):
-        self.rel = rel
-        self.var = var
-        self.columns = columns
-
-    def __str__(self):
-        s = '{} {}'.format(self.rel, self.var)
-        return s
+    pass
 
 
 class dbsCompound(dbsRelation):
-    def __init__(self, rel, var, columns):
-        super(dbsCompound, self).__init__(rel, var, columns)
+    pass
 
 
 class dbsDensity(dbsRelation):
-    def __init__(self, rel, var, columns):
-        super(dbsDensity, self).__init__(rel, var, columns)
+    pass
 
 
 class dbsVaporizationEnthalpy(dbsRelation):
-    def __init__(self, rel, var, columns):
-        super(dbsVaporizationEnthalpy, self).__init__(rel, var, columns)
+    pass
 
 
 class dbsEntry():
@@ -70,30 +76,35 @@ class dbsEntry():
 
     def __init__(self, larsCode):
         self.larsCode = larsCode
-        self.relations = {}
+        self.factories = {}
 
     def __str__(self):
         s = '\tLARSCODE: {}\n\tRELATIONS:'.format(self.larsCode)
-        for rel in self.relations:
+        for rel in self.factories:
             s = '{} {},'.format(s, rel)
         s = s[:-1]
         return s
 
-    def addRelation(self, relation):
-        rel = relation.rel
-        if rel in self.relations:
+    def createFactory(larsCode, prop, rel, var, col):
+        factory = dbsEntry.classes[prop](larsCode, prop, rel, var, col)
+        return factory
+
+    def addFactory(self, factory):
+        rel = factory.rel
+        if rel in self.factories:
             s = '{}: Relation already added.'.format(rel)
             print(s)
             sys.exit(666)
-        self.relations[rel] = relation
+        self.factories[rel] = factory
 
-    def getCompoundRelation(self):
-        return self.relations['cpd']
+    def getFactory(self, rel):
+        return self.factories[rel]
 
 
 def dbsEntryDecoder(obj):
     if '__type__' in obj and obj['__type__'] == 'dbsEntry':
-        entry = dbsEntry(obj['larsCode'])
+        larsCode = obj['larsCode']
+        entry = dbsEntry(larsCode)
 
         classes = dbsEntry.classes
         for prop in classes:
@@ -102,9 +113,8 @@ def dbsEntryDecoder(obj):
                 var = obj[prop]['var']
                 col = obj[prop]['col']
 
-                factory = classes[prop]()
-                relation = factory.createRelation(rel, var, col)
-                entry.addRelation(relation)
+                factory = dbsEntry.createFactory(larsCode, prop, rel, var, col)
+                entry.addFactory(factory)
 
         return entry
     else:
