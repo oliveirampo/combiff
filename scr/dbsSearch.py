@@ -1,18 +1,10 @@
-from collections import OrderedDict
 from datetime import datetime
 import pandas as pd
-import numpy as np
-import json
 import sys
-import os
 
 
-import dbs
 import myExceptions
-from molecule import moleculeDecoder
-
-
-#00_mol_A.lst ../../00_originals/mol_A.p
+import dbs
 
 
 def run():
@@ -24,34 +16,23 @@ def run():
 
     # I decided to keep both files (molListFile and enuMolFile)
     # because I can easily comment out entries in molListFile
+    # just be careful with "#" in smiles strings
     # 00_file.lst
     molListFile = sys.argv[2]
     # molList = np.genfromtxt(molListFile, dtype=None, encoding='utf-8')
     molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles'])
 
     dbsFileName = 'inp/dbs.json'
-    dbsEntries = getDbsEntries(dbsFileName)
+    dbsEntries = dbs.getDbsEntries(dbsFileName)
 
     molList = getCids(dbsEntries, molList)
     # getCidsofSynonyms(dbsEntries, molList)
 
-    propCod = {'dns': ['YA14.6'], 'hvp': ['AC16.1']}
-    tables = getData(propCod, molList, dbsEntries)
+    tables = getData(molList, dbsEntries)
 
     writeData(tables)
 
     print('\nTotal running time: {}\n'.format(datetime.now() - startTime))
-
-
-def getDbsEntries(fileName):
-    if not os.path.exists(fileName):
-        raise myExceptions.NoFile(fileName)
-
-    with open(fileName) as jsonFile:
-        dbsEntries = json.load(jsonFile, object_hook=dbs.dbsEntryDecoder)
-        # for entry in dbsEntries: print(dbsEntries[entry])
-
-        return dbsEntries
 
 
 def getCids(dbsEntries, molList):
@@ -95,11 +76,12 @@ def getCidsofSynonyms(dbsEntries, molList):
                     sys.exit(666)
 
 
-def getData(propCod, molList, dbsEntries):
+def getData(molList, dbsEntries):
     # print(molList)
     columns = molList.columns.tolist()
     tables = {}
 
+    propCod = dbs.dbsEntry.propCod
     for prop in propCod:
         tables[prop] = {}
 
@@ -121,9 +103,12 @@ def getData(propCod, molList, dbsEntries):
     return tables
 
 
-def writeData(tables):
-    dfAll = pd.DataFrame()
+def getFileName(prop, larsCode):
+    fileName = 'data/{}_{}.csv'.format(prop, larsCode)
+    return fileName
 
+
+def writeData(tables):
     for prop in tables:
         for larsCode in tables[prop]:
 
@@ -131,7 +116,25 @@ def writeData(tables):
             df = pd.concat(tab, ignore_index=True)
             df = df.drop_duplicates(keep='last')
 
-            fileName = 'data/{}_{}.csv'.format(prop, larsCode)
+            df.reset_index(inplace=True, drop=True)
+
+            fileName = getFileName(prop, larsCode)
             df.to_csv(fileName)
+
+
+def readData():
+    tables = {}
+
+    propCod = dbs.dbsEntry.propCod
+    for prop in propCod:
+        tables[prop] = {}
+
+        for larsCod in propCod[prop]:
+            fileName = getFileName(prop, larsCod)
+            tab = pd.read_csv(fileName, index_col=0)
+
+            tables[prop][larsCod] = tab
+
+    return tables
 
 

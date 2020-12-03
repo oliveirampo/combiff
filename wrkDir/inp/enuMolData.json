@@ -1,0 +1,113 @@
+{
+  "C": {
+    "__type__": "Molecule",
+    "smiles": "C",
+    "name": "",
+    "enu_name": "",
+    "code": "0100_000000001",
+    "enu_code": "0100_000000001",
+    "cas": "14493-06-2",
+    "num_frags": 0,
+    "frags": [],
+    "num_links": 0,
+    "links": [],
+    "other_names": [],
+    "form": "C1H4",
+    "match": false,
+    "inchi": "",
+    "cid_pcp": 297,
+    "inchi_pcp": "VNWKTOKETHGBQD-UHFFFAOYSA-N",
+    "name_pcp": "methane",
+    "form_pcp": "CH4",
+    "nC": "",
+    "atoms": [],
+    "topo_cod": ""
+  },
+  "CC": {
+    "__type__": "Molecule",
+    "smiles": "CC",
+    "name": "",
+    "enu_name": "",
+    "code": "0100_000000002",
+    "enu_code": "0100_000000002",
+    "cas": "74-84-0",
+    "num_frags": "2",
+    "frags": [
+      [
+        "1",
+        "ET"
+      ],
+      [
+        "2",
+        "ET"
+      ]
+    ],
+    "num_links": "1",
+    "links": [
+      [
+        "1",
+        "2",
+        "A:A"
+      ]
+    ],
+    "other_names": [],
+    "form": "C2H6",
+    "match": false,
+    "inchi": "",
+    "cid_pcp": 6324,
+    "inchi_pcp": "OTMSDBZUPAUEDD-UHFFFAOYSA-N",
+    "name_pcp": "ethane",
+    "form_pcp": "C2H6",
+    "nC": "",
+    "atoms": [],
+    "topo_cod": ""
+  },
+  "CCC": {
+    "__type__": "Molecule",
+    "smiles": "CCC",
+    "name": "",
+    "enu_name": "",
+    "code": "0100_000000003",
+    "enu_code": "0100_000000003",
+    "cas": "74-98-6",
+    "num_frags": "3",
+    "frags": [
+      [
+        "1",
+        "C2"
+      ],
+      [
+        "2",
+        "ET"
+      ],
+      [
+        "3",
+        "ET"
+      ]
+    ],
+    "num_links": "2",
+    "links": [
+      [
+        "1",
+        "2",
+        "A:A"
+      ],
+      [
+        "1",
+        "3",
+        "B:A"
+      ]
+    ],
+    "other_names": [],
+    "form": "C3H8",
+    "match": false,
+    "inchi": "",
+    "cid_pcp": 6334,
+    "inchi_pcp": "ATUOYWHBWRKTHZ-UHFFFAOYSA-N",
+    "name_pcp": "propane",
+    "form_pcp": "C3H8",
+    "nC": "",
+    "atoms": [],
+    "topo_cod": ""
+  }
+}

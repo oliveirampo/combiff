@@ -4,6 +4,7 @@ import myExceptions
 import getIdentifiers
 import writeIdentifiers
 import dbsSearch
+import plotData
 
 
 def main():
@@ -21,6 +22,9 @@ def main():
 
         elif job == '-dbsSearch':
             dbsSearch.run()
+
+        elif job == '-plotAll':
+            plotData.plotAll()
 
 
     except (myExceptions.ArgError) as err:
