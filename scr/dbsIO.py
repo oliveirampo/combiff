@@ -23,12 +23,12 @@ class parserDefault(relationParser):
     def __init__(self, larsCode, rel, col):
         super(parserDefault, self).__init__(larsCode, rel, col)
 
-    def readRelation(self):
+    def readRelation(self, path):
         larsCode = self.larsCode
         rel = self.rel
         columns = self.col
 
-        fileName = '{}/{}_{}.rel'.format(dbs.dbsEntry.path, larsCode, rel)
+        fileName = '{}/{}_{}.rel'.format(path, larsCode, rel)
         if not os.path.exists(fileName):
             raise myExceptions.NoFile(fileName)
 
@@ -46,7 +46,7 @@ class parserDefault(relationParser):
                 i += 1
 
             elif row[0] == '@tab':
-                dfTable = readTable(i + 1, lines, columns)
+                dfTable = readTable(i + 1, lines, columns, fileName)
                 i = len(lines)
 
             else:
@@ -55,7 +55,7 @@ class parserDefault(relationParser):
         return dfTable
 
 
-def readTable(i, lines, columns):
+def readTable(i, lines, columns, fileName):
     columns = columns.strip().split()
     columns = columns[1:]
     table = []
@@ -74,8 +74,7 @@ def readTable(i, lines, columns):
 
         else:
             if len(row) != len(columns):
-                print('Wrong number of columns.')
-                sys.exit(666)
+                raise myExceptions.WrongNumberofColumns(fileName)
 
             table.append(row)
             i += 1

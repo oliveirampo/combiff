@@ -21,15 +21,26 @@ def main():
             writeIdentifiers.run()
 
         elif job == '-dbsSearch':
-            dbsSearch.run()
+            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            dbsSearch.run(dbsConfig)
 
         elif job == '-plotAll':
-            plotData.plotAll()
-
+            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            plotData.plotAll(dbsConfig)
+            print('DONE')
+            # TODO - add vapor pressure when tem > tb
 
     except (myExceptions.ArgError) as err:
         print(err)
-    except (myExceptions.NoFile) as err:
+    except (myExceptions.NoFile, myExceptions.WrongNumberofColumns) as err:
+        print(err)
+    except (myExceptions.NoKey, myExceptions.WrongProperty) as err:
+        print(err)
+    except (myExceptions.VariableNotDefined, myExceptions.EquationNotImplemented) as err:
+        print(err)
+    except (myExceptions.MethodNotImplemented) as err:
         print(err)
 
 

@@ -25,7 +25,7 @@ def run():
 
     isomers = IO.readFieFile(fieFile)
     molecules = IO.readFlsFile(flsFile, isomers)
-    # this will te a while
+    # this will take a while
     cidSmiles = IO.readCiDSmilesFile(cidSmilesFile)
 
     data = OrderedDict()
