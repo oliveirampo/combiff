@@ -55,6 +55,7 @@ class DbsRelation(ABC):
             pre = data.shape[0] * [[defaultPressure]]
             data = np.hstack((pre, data))
 
+        # indexes = tab.index.to_numpy()
         return data
 
 
@@ -153,7 +154,6 @@ class dbsDensity(DbsRelation):
         if prop_convert != 1:
             data[:, 2] = prop_convert * data[:, 2]
 
-        # print(data)
         return data
 
 
@@ -189,7 +189,6 @@ class dbsVaporizationEnthalpy(DbsRelation):
         if prop_convert != 1:
             data[:, 2] = prop_convert * data[:, 2]
 
-        # print(data)
         return data
 
 
@@ -238,6 +237,13 @@ class dbsMeltingPoint(DbsRelation):
     def getData(self, tab, defaultPressure):
         data = super(dbsMeltingPoint, self).getDataHelper(tab, defaultPressure)
         super(dbsMeltingPoint, self).checkTransitionTemperature(data)
+
+        # convert temperature
+        col = 0
+        tem_convert = self.tem_convert
+        if tem_convert != 0.0:
+            data[:, col] = tem_convert + data[:, col]
+
         return data
 
 
@@ -251,6 +257,13 @@ class dbsBoilingPoint(DbsRelation):
     def getData(self, tab, defaultPressure):
         data = super(dbsBoilingPoint, self).getDataHelper(tab, defaultPressure)
         super(dbsBoilingPoint, self).checkTransitionTemperature(data)
+
+        # convert temperature
+        col = 0
+        tem_convert = self.tem_convert
+        if tem_convert != 0.0:
+            data[:, col] = tem_convert + data[:, col]
+
         return data
 
 
@@ -265,6 +278,18 @@ class dbsCriticalTemperature(DbsRelation):
         data = super(dbsCriticalTemperature, self).getDataHelper(tab, defaultPressure)
         super(dbsCriticalTemperature, self).checkTransitionTemperature(data)
         return data
+
+
+class dbsVaporPressure(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        super(dbsVaporPressure, self).__init__(larsCode, prop, rel, var, col, pre, tem,
+            prop_convert, tem_convert, pre_convert, marker, color)
+
+
+    def getData(self, tab, defaultPressure):
+        return [[]]
 
 
 

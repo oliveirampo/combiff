@@ -9,9 +9,41 @@ class Equation(ABC):
     def compute(self, tem):
         pass
 
+
     @abstractmethod
-    def getData(self, tem_room, nPoints, tab, tem_convert):
+    def addCoefficients(self, tab):
         pass
+
+
+    def getData(self, tem_room, nPoints, tab, tem_convert):
+        self.addCoefficients(tab)
+        tem_min = self.tem_min
+        tem_max = self.tem_max
+        fid = self.fid
+
+        if tem_convert != 0.0:
+            tem_min = tem_min + tem_convert
+            tem_max = tem_max + tem_convert
+
+        X = getInterval(tem_room, nPoints, tem_min, tem_max)
+        Y = [self.compute(i) for i in X]
+
+        return X, Y, fid
+
+
+    def getDataAt(self, tem, tab):
+        self.addCoefficients(tab)
+        tem_min = self.tem_min
+        tem_max = self.tem_max
+
+        # all temperaturess should be in degree Celsius
+        tem = tem - 273.15
+
+        if (tem < tem_min) or (tem > tem_max):
+            return []
+
+        val = self.compute(tem)
+        return [val]
 
 
 class nullEquation(Equation):
@@ -23,31 +55,24 @@ class nullEquation(Equation):
         pass
 
 
+    def addCoefficients(self, tab):
+        pass
+
+
     def getData(self, tem_room, nPoints, tab, tem_convert):
         return [], [], []
+
+
+    def getDataAt(self, tem, tab):
+        return []
+
 
 
 class dnsEquation1(Equation):
     def __init__(self):
         pass
 
-    def addCoefficients(self, a, b, c, n):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.n = n
-
-
-    def compute(self, tem):
-        a = self.a
-        b = self.b
-        c = self.c
-        n = self.n
-        exp = -math.pow(1.0 - (tem / c), n)
-        return 1000.0 * a * math.pow(b, exp)
-
-
-    def getData(self, tem_room, nPoints, tab, tem_convert):
+    def addCoefficients(self, tab):
         a = tab['a_dns']
         b = tab['b_dns']
         c = tab['c_dns']
@@ -63,16 +88,22 @@ class dnsEquation1(Equation):
         tem_min = float(tem_min)
         tem_max = float(tem_max)
 
-        self.addCoefficients(a, b, c, n)
+        self.a = a
+        self.b = b
+        self.c = c
+        self.n = n
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
 
-        if tem_convert != 0.0:
-            tem_min = tem_min + tem_convert
-            tem_max = tem_max + tem_convert
 
-        X = getInterval(tem_room, nPoints, tem_min, tem_max)
-        Y = [self.compute(i) for i in X]
-
-        return X, Y, fid
+    def compute(self, tem):
+        a = self.a
+        b = self.b
+        c = self.c
+        n = self.n
+        exp = -math.pow(1.0 - (tem / c), n)
+        return 1000.0 * a * math.pow(b, exp)
 
 
 class hvpEquation1(Equation):
@@ -80,20 +111,7 @@ class hvpEquation1(Equation):
         pass
 
 
-    def addCoefficients(self, a, n, tem_cri):
-        self.a = a
-        self.n = n
-        self.tem_cri = tem_cri
-
-
-    def compute(self, tem):
-        a = self.a
-        n = self.n
-        tem_cri = self.tem_cri
-        return a * math.pow(1.0 - (tem / tem_cri), n)
-
-
-    def getData(self, tem_room, nPoints, tab, tem_convert):
+    def addCoefficients(self, tab):
         a = tab['a_hvp']
         n = tab['n_hvp']
         tem_cri = tab['tem_cri']
@@ -112,16 +130,66 @@ class hvpEquation1(Equation):
         tem_min = float(tem_min)
         tem_max = float(tem_max)
 
-        self.addCoefficients(a, n, tem_cri)
+        self.a = a
+        self.n = n
+        self.tem_cri = tem_cri
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
 
-        if tem_convert != 0.0:
-            tem_min = tem_min + tem_convert
-            tem_max = tem_max + tem_convert
 
-        X = getInterval(tem_room, nPoints, tem_min, tem_max)
-        Y = [self.compute(i) for i in X]
+    def compute(self, tem):
+        a = self.a
+        n = self.n
+        tem_cri = self.tem_cri
+        return a * math.pow(1.0 - (tem / tem_cri), n)
 
-        return X, Y, fid
+
+class pvpEquation1(Equation):
+    def __init__(self):
+        pass
+
+
+    def addCoefficients(self, tab):
+        a = tab['a_pvp']
+        b = tab['b_pvp']
+        c = tab['c_pvp']
+        tem_min = tab['tem_min']
+        tem_max = tab['tem_max']
+
+        columns = tab.columns
+        if 'fid' in columns:
+            fid = tab['fid'].values
+        else:
+            fid = tab['met'].values
+
+        a = float(a)
+        b = float(b)
+        c = float(c)
+        tem_min = float(tem_min)
+        tem_max = float(tem_max)
+
+        self.a = a
+        self.b = b
+        self.c = c
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
+
+
+    def compute(self, tem):
+        # Torr
+        a = self.a
+        b = self.b
+        c = self.c
+        logP = a - ( b / (tem + c) )
+
+        # Bar
+        P = math.pow(10, logP) * 1.01325/760.0
+
+        # kPA
+        P = P * 100
+        return P
 
 
 def getInterval(tem_room, n, tem_min, tem_max):

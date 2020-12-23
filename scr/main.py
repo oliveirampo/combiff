@@ -4,6 +4,7 @@ import myExceptions
 import getIdentifiers
 import writeIdentifiers
 import dbsSearch
+import selectData
 import plotData
 
 
@@ -25,12 +26,15 @@ def main():
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             dbsSearch.run(dbsConfig)
 
-        elif job == '-plotAll':
+        elif job == '-selectData':
+            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            selectData.manualSelection(dbsConfig)
+
+        elif job == '-plotData':
             dbsConfigurationFile = 'inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             plotData.plotAll(dbsConfig)
-            print('DONE')
-            # TODO - add vapor pressure when tem > tb
 
     except (myExceptions.ArgError) as err:
         print(err)

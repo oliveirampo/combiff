@@ -1,11 +1,10 @@
 import pandas as pd
+import json
 import sys
 
 
-import utils
-
-
 from molecule import Molecule
+import myDataStructure
 
 
 def readFieFile(fileName):
@@ -102,5 +101,12 @@ def readCiDSmilesFile(fileName):
     #     df.loc[idx, 'smiles'] = str(smiles)
 
     return df
+
+
+def writeToJson(dbsConfig, selectedData):
+    fileName = dbsConfig.getOutFileName('molJsonFile')
+
+    with open(fileName, "w") as outfile:
+        json.dump(selectedData, outfile, cls=myDataStructure.SelectedDataEncoder, indent=1)
 
 

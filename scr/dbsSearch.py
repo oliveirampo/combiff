@@ -53,7 +53,11 @@ class dbsConfiguration():
         return props
 
     def getVariable(self, propName):
-        var = self.config.get('globalVariables', propName)
+        try:
+            var = self.config.get('globalVariables', propName)
+        except configparser.NoOptionError:
+            raise myExceptions.VariableNotDefined(propName)
+
         return var
 
     def getNumberOfPoints(self):
@@ -67,6 +71,10 @@ class dbsConfiguration():
             return True
         else:
             return False
+
+    def getOutFileName(self, typ):
+        fileName = self.config.get('outputFiles', typ)
+        return fileName
 
 
 def run(dbsConfig):
@@ -188,7 +196,7 @@ def writeData(tables):
             df.reset_index(inplace=True, drop=True)
 
             fileName = getFileName(prop, larsCode)
-            df.to_csv(fileName)
+            df.to_csv(fileName, index=False)
 
 
 def readData(propCod):
@@ -199,7 +207,11 @@ def readData(propCod):
 
         for larsCod in propCod[prop]:
             fileName = getFileName(prop, larsCod)
-            tab = pd.read_csv(fileName, index_col=0)
+
+            try:
+                tab = pd.read_csv(fileName)
+            except FileNotFoundError:
+                raise myExceptions.NoFile(fileName)
 
             tables[prop][larsCod] = tab
 

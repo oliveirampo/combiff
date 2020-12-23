@@ -6,7 +6,7 @@ import os
 
 import dbsRelation
 import myExceptions
-from scr import dbsIO
+import dbsIO
 import Equation
 
 
@@ -182,9 +182,9 @@ class createRelationMeltingPoint(abstractFactoryRelation):
 
 class createRelationCriticalTemperature(abstractFactoryRelation):
     def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
-                 prop_convert, tem_convert, pre_convert, marker, color):
+                prop_convert, tem_convert, pre_convert, marker, color):
         super(createRelationCriticalTemperature, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
-            prop_convert, tem_convert, pre_convert, marker, color)
+                prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
@@ -200,11 +200,32 @@ class createRelationCriticalTemperature(abstractFactoryRelation):
         return Equation.nullEquation()
 
 
+class createRelationVaporPressure(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                prop_convert, tem_convert, pre_convert, marker, color):
+        super(createRelationVaporPressure, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+                prop_convert, tem_convert, pre_convert, marker, color)
+
+
+    def createRelation(self):
+        return dbsRelation.dbsVaporPressure(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre,
+            self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+
+    def createEquation(self):
+        return Equation.pvpEquation1()
+
+
 class dbsEntry():
     classes = {'cpd': createRelationCompound, 'dns': createRelationDensity, 'hvp': createRelationVaporizationEnthalpy,
                'hvb': createRelationVaporizationEnthalpyAtBoilingPoint,
                'mlp': createRelationMeltingPoint, 'blp': createRelationBoilingPoint,
-               'tem_cri': createRelationCriticalTemperature}
+               'tem_cri': createRelationCriticalTemperature,
+               'pvp': createRelationVaporPressure}
 
 
     def __init__(self, larsCode):
@@ -307,7 +328,6 @@ def getDbsEntries(fileName):
 
     with open(fileName) as jsonFile:
         dbsEntries = json.load(jsonFile, object_hook=dbsEntryDecoder)
-        # for entry in dbsEntries: print(dbsEntries[entry])
 
         return dbsEntries
 

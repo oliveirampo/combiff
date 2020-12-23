@@ -1,120 +1,85 @@
 import matplotlib.pyplot as plt
-import pandas as pd
-import configparser
-import numpy as np
+import json
 import sys
 import os
 
 
-import myExceptions
-import dbsSearch
-import dbs
+import selectData
+import select_points
+import myDataStructure
+
+
+def select_data(fig, ax, x_values, y_valies):
+    highlighter = select_points.Highlighter(ax, x_values, y_valies)
+    # plt.show()
+    selected_regions = highlighter.mask
+
+    plt.close(fig)
+    return selected_regions
 
 
 def plotAll(dbsConfig):
-    nArgs = len(sys.argv)
-    if nArgs != 3:
-        raise myExceptions.ArgError(nArgs, 3)
+    fileName = dbsConfig.getOutFileName('molJsonFile')
 
-    # 00_file.lst
-    molListFile = sys.argv[2]
-    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles'])
-    # print(molList)
+    with open(fileName) as jsonFile:
+        selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)
 
-    dbsFileName = dbsConfig.getDbsFileName()
-    dbsEntries = dbs.getDbsEntries(dbsFileName)
+    data = selectedData[0]
+    # print(data.mlp, data.blp)
+    # print(data)
+    print('TODO')
 
-    # get tables with data
-    properties = dbsConfig.getProps()
-    propCod = dbsConfig.getPropCod()
-    tables = dbsSearch.readData(propCod)
 
-    defaultPressure = dbsConfig.getDefaultPressure()
-    tem_room = dbsConfig.getDefaultTemperature()
-    nPoints = dbsConfig.getNumberOfPoints()
+def plotPoint(tem, val, larsCode, marker, color, linewidth):
+    plt.plot(tem, val, linewidth=linewidth, marker=marker, c=color, label=larsCode)
 
-    for prop in properties:
-        for idx, row in molList.iterrows():
-            cod = row['cod']
-            frm = row['frm']
-            nam = row['nam']
-            cas = row['cas']
-            inchi = row['inchi']
-            smiles = row['smiles']
 
-            fig, ax = plotStart()
-            plotRoomTem()
-            plotTransitionPoint('meltingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
-            plotTransitionPoint('boilingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
-            plotTransitionPoint('criticalTemperature', defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
+def plotStart(mlpVar, mlp, blpVar, blp, tem_cri_var, tem_cri):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
 
-            x_values = []
-            y_values = []
-            src_values = []
-            pre_values = []
+    plotRoomTem()
+    plotTransitionPoint(mlpVar, mlp)
+    plotTransitionPoint(blpVar, blp)
+    plotTransitionPoint(tem_cri_var, tem_cri)
 
-            if dbsConfig.isHvp(prop):
-                plotHvb('hvb', propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values)
+    return fig, ax
 
-            for larsCode in propCod[prop]:
-                tab = tables[prop][larsCode]
-                tab = tab.loc[tab['smiles'] == smiles]
-                if tab.shape[0] == 0:
-                    continue
 
-                dbsEntry = dbsEntries[larsCode]
-                dbsFactory = dbsEntry.getFactory(prop)
-                dbsRelation = dbsFactory.createRelation()
-                data = dbsRelation.getData(tab, defaultPressure)
+def plotEnd(fig, prop, cod):
+    figName = 'plot/selected_{}_{}.png'.format(prop, cod)
+    fig.savefig(figName)
+    plt.close(fig)
 
-                pre = data[:, 0]
-                tem = data[:, 1]
-                val = data[:, 2]
-                marker = dbsRelation.marker
-                color = dbsRelation.color
-                plt.plot(tem, val, linewidth=0.0, marker=marker, c=color, label=larsCode)
-                saveDataPts(tem, val, larsCode, x_values, y_values, src_values)
-                for p in pre: pre_values.append(p)
 
-                equation = dbsFactory.createEquation()
-                X, Y, note = equation.getData(tem_room, nPoints, tab, dbsRelation.tem_convert)
-                if len(X) > 0:
-                    plt.plot(X, Y, linewidth=1.0, marker=marker, color=color, label=larsCode)
-                    saveDataPts(X, Y, larsCode, x_values, y_values, src_values)
-                    addCode(X[0], Y[0], note[0])
+def plotTransitionPoint(prop, data):
+    # plot first value
+    values = selectData.getFirstValueOfTransitionPoint(data)
 
-                    # TODO - add pvp
-                    for x in X: pre_values.append(defaultPressure)
+    if len(values) == 2:
+        tem = values[0]
+        src = values[1]
 
-            # TODO - add pvp
+        if prop == 'mlp':
+            color = 'blue'
+            label = 'Tm (' + src + ')'
+        elif prop == 'blp':
+            color = 'lime'
+            label = 'Tb (' + src + ')'
+        elif prop == 'tem_cri':
+            color = 'red'
+            label = 'Tc (' + src + ')'
+        else:
+            print('Variable not defined: {}'.format(prop))
+            sys.exit(123)
 
-            yLabel = getYLabel(prop)
-            xLabel = 'T [K]'
-            plt.ylabel(yLabel)
-            plt.xlabel(xLabel)
-
-            plotDetails(fig, cod, frm, nam, cas, inchi)
-
-            x_values = np.asarray(x_values)
-            y_values = np.asarray(y_values)
-            src_values = np.asarray(src_values)
-            pre_values = np.asarray(pre_values)
-
-            if len(x_values) != len(y_values):
-                print('len(tem) != len({})\n'.format(prop))
-                sys.exit(1)
-            if len(x_values) != len(pre_values):
-                print('len(tem) != len(pre) for prop = {}\n'.format(prop))
-                sys.exit(1)
-
-            # plt.show()
-            figName = 'plot/all_{}_{}.png'.format(prop, cod)
-            fig.savefig(figName)
-            plt.close(fig)
+        plt.axvline(x=tem, color=color, linestyle='--', label=label)
 
 
 # plot hvp at boiling point
-def plotHvb(prop, propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values):
+def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values):
+    prop = 'hvb'
+
     for larsCode in propCod[prop]:
         tab = tables[prop][larsCode]
         tab = tab.loc[tab['smiles'] == smiles]
@@ -138,16 +103,26 @@ def plotHvb(prop, propCod, tables, smiles, dbsEntries, defaultPressure, x_values
         for p in pre: pre_values.append(p)
 
 
-def addCode(x, y, fid):
-    plt.annotate(fid, (x, y))
-
-
 def saveDataPts(X, Y, src, x_values, y_values, src_values):
     for x in X:
         x_values.append(float(x))
         src_values.append(src)
     for y in Y:
         y_values.append(float(y))
+
+
+def markPressure(X, Y, P, defaultPressure):
+    for i in range(P.shape[0]):
+        x = X[i]
+        y = Y[i]
+        p = P[i]
+
+        if p > defaultPressure:
+            addCode(x, y, '*')
+
+
+def addCode(x, y, fid):
+    plt.annotate(fid, (x, y))
 
 
 def getYLabel(prop):
@@ -159,71 +134,27 @@ def getYLabel(prop):
     return yLab
 
 
-def plotStart():
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    return fig, ax
+def plotDetails(fig, row, prop):
+    cod = row['cod']
+    frm = row['frm']
+    nam = row['nam']
+    cas = row['cas']
+    inchi = row['inchi']
 
+    yLabel = getYLabel(prop)
+    xLabel = 'T [K]'
+    plt.ylabel(yLabel)
+    plt.xlabel(xLabel)
 
-def plotRoomTem():
-    plt.axvline(x=298.15, color='black', label='298.15 K')
-
-
-def plotTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles):
-    try:
-        prop = dbsConfig.getVariable(propName)
-    except configparser.NoOptionError:
-        raise myExceptions.VariableNotDefined(propName)
-
-    data = []
-    for larsCode in propCod[prop]:
-        tab = tables[prop][larsCode]
-        tab = tab.loc[tab['smiles'] == smiles]
-
-        if tab.shape[0] == 0:
-            continue
-
-        dbsEntry = dbsEntries[larsCode]
-        dbsFactory = dbsEntry.getFactory(prop)
-        dbsRelation = dbsFactory.createRelation()
-        dat = dbsRelation.getData(tab, defaultPressure)
-
-        values = dat.shape[0] * [[0.0, larsCode]]
-
-        for i in range(dat.shape[0]):
-            values[i][0] = dat[i, 0]
-        data.extend(values)
-
-    data = pd.DataFrame(data, columns=['tem', 'larsCode'])
-
-    # plot first value
-    if data.shape[0] != 0:
-        row = data.iloc[0]
-        tem = row['tem']
-        src = row['larsCode']
-
-        if prop == 'mlp':
-            color = 'blue'
-            label = 'Tm (' + src + ')'
-        elif prop == 'blp':
-            color = 'lime'
-            label = 'Tb (' + src + ')'
-        elif prop == 'tem_cri':
-            color = 'red'
-            label = 'Tc (' + src + ')'
-        else:
-            print('Variable not defined: {}'.format(prop))
-            sys.exit(123)
-
-        plt.axvline(x=tem, color=color, linestyle='--', label=label)
-
-
-def plotDetails(fig, cod, frm, nam, cas, stdInchiKey):
-    title = '{} / {}\n{} / {}\n{}'.format(cod, frm, nam, cas, stdInchiKey)
+    title = '{} / {}\n{} / {}\n{}'.format(cod, frm, nam, cas, inchi)
     plt.title(title)
     plt.xlabel(r'$T\/[K]$')
     plt.legend(numpoints=1, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=10)
     fig.subplots_adjust(right=0.75, top=0.85)
+
+
+def plotRoomTem():
+    plt.axvline(x=298.15, color='black', label='298.15 K')
 
 
 def insertPic(ax, cod, picDir):
