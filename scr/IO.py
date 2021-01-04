@@ -1,10 +1,10 @@
 import pandas as pd
 import json
-import sys
 
 
 from molecule import Molecule
 import myDataStructure
+import utils
 
 
 def readFieFile(fileName):
@@ -94,11 +94,11 @@ def readCiDSmilesFile(fileName):
         dtype = {'cid': 'Int64', 'smiles': 'str'})
 
     # canonicalize smiles
-    # for idx, row in df.iterrows():
-    #     smiles = row['smiles']
-    #     smiles = utils.getCanonicalSmiles(smiles)
-    #
-    #     df.loc[idx, 'smiles'] = str(smiles)
+    for idx, row in df.iterrows():
+        smiles = row['smiles']
+        smiles = utils.getCanonicalSmiles(smiles)
+
+        df.loc[idx, 'smiles'] = str(smiles)
 
     return df
 

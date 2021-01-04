@@ -25,6 +25,8 @@ def run():
 
     isomers = IO.readFieFile(fieFile)
     molecules = IO.readFlsFile(flsFile, isomers)
+
+    print('Canonicalizing SMILES')
     # this will take a while
     cidSmiles = IO.readCiDSmilesFile(cidSmilesFile)
 
@@ -35,6 +37,7 @@ def run():
         with open(molDataFile) as jsonFile:
             data = json.load(jsonFile, object_hook=moleculeDecoder)
 
+    print('Downloading Molecules')
     if cidSmiles.shape[0] != 0:
         matchMol(cidSmiles, molecules, data, molDataFile)
     else:
