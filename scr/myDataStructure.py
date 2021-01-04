@@ -74,7 +74,6 @@ class SelectedData():
 
 
     def addProperty(self, prop, mask, x_values, y_values, pre_values, src_values):
-        mask[-1] = True
         pre = pre_values[mask]
         tem = x_values[mask]
         val = y_values[mask]

@@ -29,7 +29,8 @@ def main():
         elif job == '-selectData':
             dbsConfigurationFile = 'inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
-            selectData.manualSelection(dbsConfig)
+            # selectData.manualSelection(dbsConfig)
+            selectData.getSelectedData(dbsConfig)
 
         elif job == '-plotData':
             dbsConfigurationFile = 'inp/dbs.conf'

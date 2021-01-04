@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import json
 import sys
 
 
@@ -8,6 +7,7 @@ import myDataStructure
 import myExceptions
 import dbsSearch
 import plotData
+import utils
 import dbs
 import IO
 
@@ -192,6 +192,99 @@ def checkArrays(prop, x_values, y_values, pre_values, src_values):
         sys.exit(1)
 
     return x_values, y_values, pre_values, src_values
+
+
+# get selected data from old format file
+def getSelectedData(dbsConfig):
+    oldMolListFileName = 'old_files/01_mol_A.lst'
+    oldSelectedDataFileName = 'old_files/mol.src'
+
+    molList = pd.read_csv(oldMolListFileName, sep='\s+',
+        names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles', 'old_cod', 'x', 'y', 'z'],
+        usecols=['cod', 'inchi', 'smiles'])
+
+    srcData = pd.read_csv(oldSelectedDataFileName, sep='\s+',
+        names = ['cod', 'nam', 'cas', 'pre', 'tem', 'dns', 'dns_src', 'hvp', 'hvp_src',
+                 'mlp', 'mlp_src', 'blp', 'blp_src', 'tem_cri', 'tem_cri_src',
+                 'eps', 'eps_src', 'x', 'y', 'z'])
+
+    srcData['letter'] = srcData['cod'].str[-1]
+    srcData['cod'] = srcData['cod'].str[:-1]
+
+    df = pd.merge(srcData, molList, how='left', on='cod')
+
+    # print(molList.shape)
+    # print(srcData.shape)
+    # print(df.shape)
+
+    # canonicalize smiles
+    # create selectedData
+    # write to json file
+    allSelectedData = []
+    codes = df['cod'].unique()
+    for cod in codes:
+        dfTmp = df.loc[df['cod'] == cod]
+
+        smiles = dfTmp['smiles'].unique()
+        if smiles.shape[0] != 1:
+            print('No unique smiles.')
+            sys.exit(123)
+        smiles = utils.getCanonicalSmiles(smiles[0])
+
+        selectedData = myDataStructure.SelectedData(smiles)
+
+        val = dfTmp['mlp'].unique()
+        src = dfTmp['mlp_src'].unique()
+        if val.shape[0] != 1:
+            print('No unique mlp')
+        if src.shape[0] != 1:
+            print('No unique mlp src')
+        if val[0] != '%' and src[0] != '%':
+            data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+            selectedData.addMeltingPoint(data)
+
+        val = dfTmp['blp'].unique()
+        src = dfTmp['blp_src'].unique()
+        if val.shape[0] != 1:
+            print('No unique blp')
+        if src.shape[0] != 1:
+            print('No unique blp src')
+        if val[0] != '%' and src[0] != '%':
+            data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+            selectedData.addBoilingPoint(data)
+
+        val = dfTmp['tem_cri'].unique()
+        src = dfTmp['tem_cri_src'].unique()
+        if val.shape[0] != 1:
+            print('No unique tem_cri')
+        if src.shape[0] != 1:
+            print('No unique tem_cri src')
+        if val[0] != '%' and src[0] != '%':
+            data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+            selectedData.addCriticalTemperature(data)
+
+        data = dfTmp[dfTmp['dns'] != '%']
+        pre = data['pre'].values
+        tem = data['tem'].values
+        dns = data['dns'].values
+        src = data['dns_src'].values
+        property = myDataStructure.Property('dns', pre, tem, dns, src)
+        selectedData.addPropertyHelper('dns', property)
+
+        data = dfTmp[dfTmp['hvp'] != '%']
+        pre = data['pre'].values
+        tem = data['tem'].values
+        hvp = data['hvp'].values
+        src = data['hvp_src'].values
+
+        property = myDataStructure.Property('hvp', pre, tem, hvp, src)
+        selectedData.addPropertyHelper('hvp', property)
+
+        allSelectedData.append(selectedData)
+        IO.writeToJson(dbsConfig, allSelectedData)
+
+        # sys.exit(123)
+
 
 
 

@@ -160,9 +160,11 @@ def getData(molList, dbsEntries, path, propCod):
 
     # propCod = dbs.dbsEntry.propCod
     for prop in propCod:
+        print(prop)
         tables[prop] = {}
 
         for larsCod in propCod[prop]:
+            print('\t', larsCod)
             tables[prop][larsCod] = []
 
             factory = dbsEntries[larsCod].getFactory(prop)
@@ -196,7 +198,8 @@ def writeData(tables):
             df.reset_index(inplace=True, drop=True)
 
             fileName = getFileName(prop, larsCode)
-            df.to_csv(fileName, index=False)
+            if df.shape[0] != 0:
+                df.to_csv(fileName, index=False)
 
 
 def readData(propCod):
