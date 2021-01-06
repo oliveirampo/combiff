@@ -6,6 +6,8 @@ def initFamilies():
     families = [
         family.Dummy(),
         family.ALK(),
+        family.ROH(),
+        family.HAL(),
     ]
     return families
 

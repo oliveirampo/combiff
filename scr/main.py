@@ -16,24 +16,30 @@ def main():
         job = sys.argv[1]
 
         if job == '-getIdentifier':
-            getIdentifiers.run()
+            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            getIdentifiers.run(dbsConfig)
 
         elif job == '-writeIdentifier':
             writeIdentifiers.run()
 
         elif job == '-dbsSearch':
-            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             dbsSearch.run(dbsConfig)
 
         elif job == '-selectData':
-            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
-            # selectData.manualSelection(dbsConfig)
+            selectData.manualSelection(dbsConfig)
+
+        elif job == '-addSelectedData':
+            dbsConfigurationFile = '../inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.getSelectedData(dbsConfig)
 
         elif job == '-plotData':
-            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             plotData.plotAll(dbsConfig)
 

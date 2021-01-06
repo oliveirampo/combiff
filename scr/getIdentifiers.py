@@ -14,7 +14,7 @@ import utils
 import IO
 
 
-def run():
+def run(dbsConfig):
     nArgs = len(sys.argv)
     if nArgs < 4:
         raise myExceptions.ArgError(4, nArgs)
@@ -32,7 +32,8 @@ def run():
 
     data = OrderedDict()
     # check if json/pickle file exists
-    molDataFile = 'inp/enuMolData.json'
+    # molDataFile = 'out/enuMolData.json'
+    molDataFile = dbsConfig.getOutFileName('enuDataFile')
     if os.path.exists(molDataFile):
         with open(molDataFile) as jsonFile:
             data = json.load(jsonFile, object_hook=moleculeDecoder)
@@ -148,14 +149,14 @@ def compare(mol, mol_pcp):
 
 
 def match_formula(reference, formula):
-    # tmp = re.findall(r'([A-Z][a-z]*)(\d*)', reference)
+    s1 = re.findall(r'([A-Z][a-z]*)(\d*)', reference)
 
     # for alcohol with formula Cx{OH}yHz
-    # s = 'C{}H{}O3'.format(tmp[0][1], int(tmp[3][1]) + 3, tmp[1][1])
-    # sys.exit('STOP')
-
-    s1 = re.findall(r'([A-Z][a-z]*)(\d*)', reference)
+    # tmp = re.findall(r'([A-Z][a-z]*)(\d*)', reference)
+    # nO = 3
+    # s = 'C{}H{}O{}'.format(tmp[0][1], int(tmp[3][1]) + nO * int(tmp[2][1]), nO)
     # s1 = re.findall(r'([A-Z][a-z]*)(\d*)', s)
+
     s2 = re.findall(r'([A-Z][a-z]*)(\d*)', formula)
 
     for i in range(len(s1)):

@@ -12,6 +12,7 @@
       "var": "dns_exm",
       "tem": "tem_exm",
       "prop_convert": "1000",
+      "eqn": "dns_1",
       "col": "@col rec cid a_dns b_dns c_dns n_dns tem_min tem_max fid tem_exm dns_exm rid pid",
       "marker": ".",
       "color": "magenta"
@@ -20,6 +21,7 @@
       "rel": "hvp",
       "var": "hvp_exm",
       "tem": "tem_exm",
+      "eqn": "hvp_1",
       "col": "@col rec cid a_hvp tem_cri n_hvp tem_min tem_max fid tem_exm hvp_exm rid pid",
       "fid": "fid",
       "marker": ".",
@@ -106,10 +108,22 @@
       "tem": "tem_dns_ref",
       "prop_convert": "1000",
       "tem_convert": "273.15",
-      "pre_convert": "760.0",
+      "pre_convert": "0.133322",
       "col": "@col rec cid phys mlp mlp_com blp blp_com pre_blp_bis blp_bis tem_dns_ref pre_dns_ref dns_ref dns_com tem_nD pre_nD nD tem_aq_sol aq_sol vp sol pid",
       "marker": "^",
       "color": "red"
+    },
+    "blp": {
+      "rel": "phys",
+      "var": "blp",
+      "tem_convert": "273.15",
+      "col": "@col rec cid phys mlp mlp_com blp blp_com pre_blp_bis blp_bis tem_dns_ref pre_dns_ref dns_ref dns_com tem_nD pre_nD nD tem_aq_sol aq_sol vp sol pid"
+    },
+    "mlp": {
+      "rel": "phys",
+      "var": "mlp",
+      "tem_convert": "273.15",
+      "col": "@col rec cid phys mlp mlp_com blp blp_com pre_blp_bis blp_bis tem_dns_ref pre_dns_ref dns_ref dns_com tem_nD pre_nD nD tem_aq_sol aq_sol vp sol pid"
     }
   },
   "FR06.6": {
@@ -124,12 +138,534 @@
       "rel": "dns",
       "var": "dns",
       "tem": "tem",
-      "prop_convert": "1000",
-      "tem_convert": "273.15",
-      "pre_convert": "760.0",
+      "pre": "pre",
       "col": "@col rec cid tem pre dns ref pid",
       "marker": "^",
       "color": "red"
+    },
+    "hvp": {
+      "rel": "hvp",
+      "var": "hvp",
+      "tem": "tem",
+      "col": "@col rec cid tem hvp ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "mlp": {
+      "rel": "mlp",
+      "var": "mlp",
+      "col": "@col rec cid mlp ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "blp": {
+      "rel": "blp",
+      "var": "blp",
+      "col": "@col rec cid blp ref pid",
+      "marker": "^",
+      "color": "red"
+    }
+  },
+  "YA15.12": {
+    "__type__": "dbsEntry",
+    "larsCode": "YA15.12",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas pid"
+    },
+    "pvp": {
+      "rel": "pvp",
+      "var": "pvp",
+      "col": "@col rec cid a_pvp b_pvp c_pvp tem_min tem_max fid ref pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "FR03.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "FR03.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm wei cas pid"
+    },
+    "dns": {
+      "rel": "dns_exp",
+      "var": "dns",
+      "tem": "tem",
+      "col": "@col rec cid pha tem dns dev rid pid",
+      "marker": ".",
+      "color": "purple"
+    },
+    "tem_cri": {
+      "rel": "dns_eqn",
+      "var": "tem_cri",
+      "col": "@col rec cid tem_min_1 tem_max_1 a_dns_1 b_dns_1 c_dns_1 d_dns_1 e_dns_1 tem_min_2 tem_max_2 tem_cri rid_tem_cri dns_cri rid_dns_cri a_dns_2 b_dns_2 c_dns_2 d_dns_2 pid"
+    }
+  },
+  "FR00.7": {
+    "__type__": "dbsEntry",
+    "larsCode": "FR00.7",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm wei cas pid"
+    },
+    "dns": {
+      "rel": "dns_exp",
+      "var": "dns",
+      "tem": "tem",
+      "col": "@col rec cid pha tem dns dev rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "tem_cri": {
+      "rel": "dns_eqn",
+      "var": "tem_cri",
+      "col": "@col rec cid tem_min_1 tem_max_1 a_dns_1 b_dns_1 c_dns_1 d_dns_1 e_dns_1 tem_min_2 tem_max_2 tem_cri rid_tem_cri dns_cri rid_dns_cri a_dns_2 b_dns_2 c_dns_2 d_dns_2 pid"
+    }
+  },
+  "FR01.4": {
+    "__type__": "dbsEntry",
+    "larsCode": "FR01.4",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm wei cas pid"
+    },
+    "dns": {
+      "rel": "dns_exp",
+      "var": "dns",
+      "tem": "tem",
+      "col": "@col rec cid            pha   tem    dns       dev      rid            pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "tem_cri": {
+      "rel": "dns_eqn",
+      "var": "tem_cri",
+      "col": "@col rec cid tem_min_1 tem_max_1 a_dns_1 b_dns_1 c_dns_1 d_dns_1 e_dns_1 tem_min_2 tem_max_2 tem_cri rid_tem_cri dns_cri rid_dns_cri a_dns_2 b_dns_2 c_dns_2 d_dns_2 pid"
+    }
+  },
+  "FR02.6": {
+    "__type__": "dbsEntry",
+    "larsCode": "FR02.6",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm wei cas pid"
+    },
+    "dns": {
+      "rel": "dns_exp",
+      "var": "dns",
+      "tem": "tem",
+      "col": "@col rec cid pha tem dns dev rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "tem_cri": {
+      "rel": "dns_eqn",
+      "var": "tem_cri",
+      "col": "@col rec cid tem_min_1 tem_max_1 a_dns_1 b_dns_1 c_dns_1 d_dns_1 e_dns_1 tem_min_2 tem_max_2 tem_cri rid_tem_cri dns_cri rid_dns_cri a_dns_2 b_dns_2 c_dns_2 d_dns_2 pid"
+    }
+  },
+  "SP18.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "SP18.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam pid"
+    },
+    "dns": {
+      "rel": "dns",
+      "var": "dns",
+      "tem": "tem",
+      "pre": "pre",
+      "pre_convert": "100.0",
+      "col": "@col rec cid dns pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
+    "hvp": {
+      "rel": "hvp",
+      "var": "hvp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid hvp pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
+    "alp": {
+      "rel": "alp",
+      "var": "alp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid alp pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid eps pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
+    "etd": {
+      "rel": "etd",
+      "var": "etd",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid etd pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
+    "etk": {
+      "rel": "etk",
+      "var": "etk",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid etk pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
+    "gam": {
+      "rel": "gam",
+      "var": "gam",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid gam pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    }
+  },
+  "WO08.3": {
+    "__type__": "dbsEntry",
+    "larsCode": "WO08.3",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tmp pre eps rid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "WO15.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "WO15.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "cid",
+      "tem": "tem",
+      "pre": "p_bar",
+      "col": "@col rec cid tmp p_mpa p_bar eps rid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "AC16.2": {
+    "__type__": "dbsEntry",
+    "larsCode": "AC16.2",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam cmnt pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol LgK dgs fid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "SU15.3": {
+    "__type__": "dbsEntry",
+    "larsCode": "SU15.3",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas wei mlp blp tem_cri pre_cri vol_cri ref pid"
+    },
+    "diffus": {
+      "rel": "self_dif",
+      "var": "self_dif",
+      "tem": "tem",
+      "tem": "pre",
+      "col": "@col rec cid tem pre dns self_dif dns_self_dif met ref pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "AC18.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "AC18.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam cmnt pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol LgK dgs fid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "AC18.2": {
+    "__type__": "dbsEntry",
+    "larsCode": "AC18.2",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam cmnt pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol LgK dgs fid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "KA03.5": {
+    "__type__": "dbsEntry",
+    "larsCode": "KA03.5",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam cmt pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "exp_dgs",
+      "col": "@col rec cid_svt cid_sol exp_LgL exp_dgs prd_LgL prd_dgs dif rid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "KA03.6": {
+    "__type__": "dbsEntry",
+    "larsCode": "KA03.6",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "exp_dgs",
+      "tem": "tem",
+      "col": "@col rec cid_svt cid_sol exp_LgL exp_dgs prd_LgL prd_dgs sgn_dif abs_dif pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "KA05.7": {
+    "__type__": "dbsEntry",
+    "larsCode": "KA05.7",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam cmt pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol LgL dgs pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "MA12.29": {
+    "__type__": "dbsEntry",
+    "larsCode": "MA12.29",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam cmt pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol chg dgs fid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "MA17.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "MA17.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam sml pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol dgs dgs_err fid rid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "TU10.2": {
+    "__type__": "dbsEntry",
+    "larsCode": "TU10.2",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam pid"
+    },
+    "dgs": {
+      "rel": "dgs",
+      "var": "dgs",
+      "col": "@col rec cid_svt cid_sol LgL dgs fid rid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "CA12.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "CA12.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas csid mw pid"
+    },
+    "dns": {
+      "rel": "dns",
+      "var": "dns",
+      "tem": "tem",
+      "prop_convert": "1000",
+      "col": "@col rec cid tem dns rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "gam": {
+      "rel": "gam",
+      "var": "gam",
+      "tem": "tem",
+      "col": "@col rec cid tem gam rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "kap": {
+      "rel": "kap",
+      "var": "kap",
+      "tem": "tem",
+      "col": "@col rec cid tem kap rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "alp": {
+      "rel": "alp",
+      "var": "alp",
+      "tem": "tem",
+      "col": "@col rec cid tem alp rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "hcp": {
+      "rel": "hcp",
+      "var": "hcp",
+      "tem": "tem",
+      "col": "@col rec cid tem hcp rid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "NI18.3": {
+    "__type__": "dbsEntry",
+    "larsCode": "NI18.3",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas smi ich ick tde_id1 tde_id2 fil pid"
+    },
+    "gam": {
+      "rel": "gam",
+      "var": "gam",
+      "tem": "tem",
+      "col": "@col rec cid tem gam err phase ref fil pfn",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "kap": {
+      "rel": "kap",
+      "var": "kap",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre kap err phase ref fil pfn",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "alp": {
+      "rel": "alp",
+      "var": "alp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre alp err phase ref fil pfn",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "hcp": {
+      "rel": "hcp",
+      "var": "hcp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre hcp err phase ref fil pfn",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "GH16.1": {
+    "__type__": "dbsEntry",
+    "larsCode": "GH16.1",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas pid"
+    },
+    "hcp": {
+      "rel": "hcp",
+      "var": "hcp",
+      "col": "@col rec cid hcp hcp_err rid pid",
+      "marker": ".",
+      "color": "magenta"
+    }
+  },
+  "ZA10.2": {
+    "__type__": "dbsEntry",
+    "larsCode": "ZA10.2",
+    "cpd": {
+      "rel": "cpd",
+      "var": "cid",
+      "col": "@col rec cid nam frm cas pid"
+    },
+    "hcp": {
+      "rel": "hcp",
+      "var": "hcp",
+      "col": "@col rec cid tem_cri tem_min_1 tem_max_1 a_hcp_1 b_hcp_1 c_hcp_1 d_hcp_1 err_hcp_1 tem_min_2 tem_max_2 a_hcp_2 b_hcp_2 c_hcp_2 d_hcp_2 err_hcp_2 tem_min_3 tem_max_3 a_hcp_3 b_hcp_3 c_hcp_3 d_hcp_3 e_hcp_3 f_hcp_3 err_hcp_3 pid",
+      "marker": ".",
+      "color": "magenta"
     }
   }
 }

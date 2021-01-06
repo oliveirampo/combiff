@@ -196,7 +196,10 @@ def checkArrays(prop, x_values, y_values, pre_values, src_values):
 
 # get selected data from old format file
 def getSelectedData(dbsConfig):
-    oldMolListFileName = 'old_files/01_mol_A.lst'
+    fieFile = sys.argv[3]
+    isomers = IO.readFieFile(fieFile)
+
+    oldMolListFileName = sys.argv[4]    # 01_mol.lst
     oldSelectedDataFileName = 'old_files/mol.src'
 
     molList = pd.read_csv(oldMolListFileName, sep='\s+',
@@ -213,11 +216,11 @@ def getSelectedData(dbsConfig):
 
     df = pd.merge(srcData, molList, how='left', on='cod')
 
-    # print(molList.shape)
-    # print(srcData.shape)
-    # print(df.shape)
+    # get smiles in common
+    isomers = utils.canonicalizeSmiles(isomers)
+    df = utils.canonicalizeSmiles(df)
+    df = pd.merge(isomers, df, how='left', on='smiles')
 
-    # canonicalize smiles
     # create selectedData
     # write to json file
     allSelectedData = []
@@ -227,9 +230,8 @@ def getSelectedData(dbsConfig):
 
         smiles = dfTmp['smiles'].unique()
         if smiles.shape[0] != 1:
-            print('No unique smiles.')
-            sys.exit(123)
-        smiles = utils.getCanonicalSmiles(smiles[0])
+            continue
+        smiles = smiles[0]
 
         selectedData = myDataStructure.SelectedData(smiles)
 
@@ -239,7 +241,7 @@ def getSelectedData(dbsConfig):
             print('No unique mlp')
         if src.shape[0] != 1:
             print('No unique mlp src')
-        if val[0] != '%' and src[0] != '%':
+        if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
             data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
             selectedData.addMeltingPoint(data)
 
@@ -249,7 +251,7 @@ def getSelectedData(dbsConfig):
             print('No unique blp')
         if src.shape[0] != 1:
             print('No unique blp src')
-        if val[0] != '%' and src[0] != '%':
+        if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
             data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
             selectedData.addBoilingPoint(data)
 
@@ -259,11 +261,12 @@ def getSelectedData(dbsConfig):
             print('No unique tem_cri')
         if src.shape[0] != 1:
             print('No unique tem_cri src')
-        if val[0] != '%' and src[0] != '%':
+        if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
             data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
             selectedData.addCriticalTemperature(data)
 
         data = dfTmp[dfTmp['dns'] != '%']
+        data = data[data['dns'] != '-']
         pre = data['pre'].values
         tem = data['tem'].values
         dns = data['dns'].values
@@ -272,6 +275,7 @@ def getSelectedData(dbsConfig):
         selectedData.addPropertyHelper('dns', property)
 
         data = dfTmp[dfTmp['hvp'] != '%']
+        data = data[data['hvp'] != '-']
         pre = data['pre'].values
         tem = data['tem'].values
         hvp = data['hvp'].values
@@ -282,10 +286,6 @@ def getSelectedData(dbsConfig):
 
         allSelectedData.append(selectedData)
         IO.writeToJson(dbsConfig, allSelectedData)
-
-        # sys.exit(123)
-
-
 
 
 

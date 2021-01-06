@@ -1,6 +1,7 @@
 from datetime import datetime
 import configparser
 import pandas as pd
+import numpy as np
 import sys
 import os
 
@@ -90,18 +91,21 @@ def run(dbsConfig):
     # 00_file.lst
     molListFile = sys.argv[2]
     # molList = np.genfromtxt(molListFile, dtype=None, encoding='utf-8')
-    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles'])
+    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['frm', 'cas', 'nam', 'inchi', 'smiles'])
 
     dbsFileName = dbsConfig.getDbsFileName()
     dbsEntries = dbs.getDbsEntries(dbsFileName)
 
+    print('Getting Identifiers')
     path = dbsConfig.getPath()
     molList = getCids(dbsEntries, molList, path)
     # getCidsofSynonyms(dbsEntries, molList)
 
+    print('Getting Data')
     propCod = dbsConfig.getPropCod()
     tables = getData(molList, dbsEntries, path, propCod)
 
+    print('Writing Data')
     writeData(tables)
 
     print('\nTotal running time: {}\n'.format(datetime.now() - startTime))
@@ -109,26 +113,41 @@ def run(dbsConfig):
 
 def getCids(dbsEntries, molList, path):
     for larsCode in dbsEntries:
+        #print(larsCode)
         factory = dbsEntries[larsCode].getFactory('cpd')
         parser = factory.createParser()
         dfTable = parser.readRelation(path)
 
-        # TODO - match my smiles and inchikey (make it more general)
-        try:
-            # match by cas
-            df = dfTable[['cid', 'cas', 'nam']]
-            df.columns = ['cid_cas_' + larsCode, 'cas', 'nam_' + larsCode]
-            molList = pd.merge(molList, df, how='left', on='cas')
-        except KeyError as err:
-            # print(larsCode, err)
-            pass
+        # TODO - match by smiles and inchikey (make it more general)
+        # print('\tmatch by cas')
+        molList = mergeByCas(larsCode, molList, dfTable)
 
-        # match by name
-        df = dfTable[['cid', 'nam']]
-        df.columns = ['cid_nam_' + larsCode, 'nam']
-        molList = pd.merge(molList, df, how='left', on='nam')
+        # print('\tmatch by name')
+        mergeByName(larsCode, molList, dfTable)
 
     return molList
+
+
+# function ignores if there are more than 1 match
+def mergeByCas(larsCode, molList, dfTable):
+    if not 'cas' in dfTable:
+        return molList
+
+    dfTable = dfTable[['cid', 'cas', 'nam']]
+    dfTable.columns = ['cid_cas_' + larsCode, 'cas', 'nam_' + larsCode]
+    dfTable = dfTable.loc[dfTable['cas'] != '%']
+
+    df = pd.merge(molList, dfTable, how='left', on='cas')
+    return df
+
+
+def mergeByName(larsCode, molList, dfTable):
+    dfTable = dfTable[['cid', 'nam']]
+    dfTable.columns = ['cid_nam_' + larsCode, 'nam']
+    dfTable = dfTable.loc[dfTable['nam'] != '%']
+
+    df = pd.merge(molList, dfTable, how='left', on='nam')
+    return df
 
 
 def getCidsofSynonyms(dbsEntries, molList):
@@ -160,11 +179,11 @@ def getData(molList, dbsEntries, path, propCod):
 
     # propCod = dbs.dbsEntry.propCod
     for prop in propCod:
-        print(prop)
+        #print(prop)
         tables[prop] = {}
 
         for larsCod in propCod[prop]:
-            print('\t', larsCod)
+            #print('\t', larsCod)
             tables[prop][larsCod] = []
 
             factory = dbsEntries[larsCod].getFactory(prop)
@@ -188,18 +207,27 @@ def getFileName(prop, larsCode):
 
 
 def writeData(tables):
+    #print()
+
     for prop in tables:
+        #print(prop)
         for larsCode in tables[prop]:
+            #print('\t', larsCode)
 
             tab = tables[prop][larsCode]
+            if len(tab) == 0:
+                continue
+
             df = pd.concat(tab, ignore_index=True)
             df = df.drop_duplicates(keep='last')
 
             df.reset_index(inplace=True, drop=True)
 
             fileName = getFileName(prop, larsCode)
-            if df.shape[0] != 0:
-                df.to_csv(fileName, index=False)
+            if df.shape[0] == 0:
+                continue
+
+            df.to_csv(fileName, index=False)
 
 
 def readData(propCod):

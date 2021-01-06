@@ -79,9 +79,46 @@ class ALK(Family):
     def __init__(self):
         self.letter = 'A'
         self.cod = 'ALK'
-        self.nam = 'alkanes'
+        self.nam = 'alkane'
 
     def get_num_of_other_atoms(self, form):
         return 0
+
+
+class ROH(Family):
+    def __init__(self):
+        self.letter = 'L'
+        self.cod = 'ROH'
+        self.nam = 'alcohol'
+
+    def get_num_of_other_atoms(self, form):
+        atoms = re.findall(r'([FlrIONPS])(\d*)', form)
+        n = 0
+        for a in atoms:
+            if a[0] == 'O':
+                if a[1] == '':
+                    n += 3
+                else:
+                    n += int(a[1])
+        return n
+
+
+class HAL(Family):
+    def __init__(self):
+        self.letter = 'X'
+        self.cod = 'HAL'
+        self.nam = 'halomethane'
+
+    def get_num_of_other_atoms(self, form):
+        atoms = re.findall(r'([FlrIONPS])(\d*)', form)
+        n = 0
+        for a in atoms:
+            if a[1] == '':
+                n += 1
+            else:
+                n += int(a[1])
+        return n
+
+
 
 
