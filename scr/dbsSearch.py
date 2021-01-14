@@ -1,4 +1,4 @@
-from datetime import datetime
+# from datetime import datetime
 import configparser
 import pandas as pd
 import sys
@@ -82,7 +82,7 @@ class dbsConfiguration():
 
 
 def run(dbsConfig):
-    startTime = datetime.now()
+    # startTime = datetime.now()
 
     nArgs = len(sys.argv)
     if nArgs != 3:
@@ -111,7 +111,7 @@ def run(dbsConfig):
     print('Writing Data')
     writeData(tables)
 
-    print('\nTotal running time: {}\n'.format(datetime.now() - startTime))
+    # print('\nTotal running time: {}\n'.format(datetime.now() - startTime))
 
 
 def getCids(dbsEntries, molList, path):
@@ -196,6 +196,9 @@ def getData(molList, dbsEntries, path, propCod):
             for cid in cid_options:
                 tab = pd.merge(molList, dfTable, how='left', left_on=cid, right_on='cid')
                 tab = tab.dropna(subset=[cid])
+
+                tab = parser.removeEmptyValues(factory.var, tab)
+
                 tables[prop][larsCod].append(tab)
 
     return tables
@@ -236,6 +239,9 @@ def readData(propCod):
 
         for larsCod in propCod[prop]:
             fileName = getFileName(prop, larsCod)
+
+            if not os.path.exists(fileName):
+                continue
 
             try:
                 tab = pd.read_csv(fileName)

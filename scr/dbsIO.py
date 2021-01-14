@@ -16,6 +16,14 @@ class relationParser(ABC):
     def readRelation(self):
         pass
 
+    def removeEmptyValues(self, var, tab):
+        if var not in tab.columns:
+            return tab
+
+        tab = tab.loc[tab[var] != '%']
+        tab = tab.dropna(subset=[var])
+        return tab
+
 
 class parserDefault(relationParser):
     def __init__(self, larsCode, rel, col):

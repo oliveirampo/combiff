@@ -37,8 +37,8 @@ class NoKey(KeyError):
         super(NoKey, self).__init__(s)
 
 class WrongProperty(KeyError):
-    def __init__(self, prop, key):
-        s = 'Could not convert {} to float: {}'.format(prop, key)
+    def __init__(self, prop, key, function):
+        s = 'Could not convert {} to float: {} in {}'.format(prop, key, function)
         super(WrongProperty, self).__init__(s)
 
 class VariableNotDefined(configparser.NoOptionError):

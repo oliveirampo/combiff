@@ -128,14 +128,20 @@ def addCode(x, y, fid):
 def getYLabel(prop):
     labels = {
         'dns': r'$\rho_{liq} \/ [kg \cdot m^{-1}]$',
-        'hvp': r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
+        'hvp': r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$',
+        'gam': r'S\gam [TODO]S',
+        'kap': r'$\kappa [TODO]$',
+        'alp': r'$\alpha [TODO]$',
+        'hcp': r'$c_P [TODO]$',
+        'eps': r'$\epsilon$',
+        'diffus': r'$D [TODO]$',
+        'etd': r'$\alpha [TODO]$',
     }
     yLab = labels[prop]
     return yLab
 
 
 def plotDetails(fig, row, prop):
-    cod = row['cod']
     frm = row['frm']
     nam = row['nam']
     cas = row['cas']
@@ -146,7 +152,7 @@ def plotDetails(fig, row, prop):
     plt.ylabel(yLabel)
     plt.xlabel(xLabel)
 
-    title = '{} / {}\n{} / {}\n{}'.format(cod, frm, nam, cas, inchi)
+    title = '{}\n{} / {}\n{}'.format(frm, nam, cas, inchi)
     plt.title(title)
     plt.xlabel(r'$T\/[K]$')
     plt.legend(numpoints=1, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=10)

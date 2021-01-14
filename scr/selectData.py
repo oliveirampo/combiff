@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import sys
@@ -20,13 +21,13 @@ def manualSelection(dbsConfig):
 
     # 00_file.lst
     molListFile = sys.argv[2]
-    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles'])
+    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['frm', 'cas', 'nam', 'inchi', 'smiles'])
 
     dbsFileName = dbsConfig.getDbsFileName()
     dbsEntries = dbs.getDbsEntries(dbsFileName)
 
     # get tables with data
-    properties = dbsConfig.getProps()
+    properties = dbsConfig.getPropList()
     propCod = dbsConfig.getPropCod()
     tables = dbsSearch.readData(propCod)
 
@@ -60,6 +61,9 @@ def manualSelection(dbsConfig):
                 plotData.plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values)
 
             for larsCode in propCod[prop]:
+                if larsCode not in tables[prop]:
+                    continue
+
                 tab = tables[prop][larsCode]
                 tab = tab.loc[tab['smiles'] == smiles]
                 if tab.shape[0] == 0:
@@ -103,7 +107,10 @@ def manualSelection(dbsConfig):
 
             selectedData.addProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values)
             allSelectedData.append(selectedData)
-            IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+            # IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+
+            plt.close(fig)
+
 
 
 def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles):
@@ -111,6 +118,9 @@ def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod
 
     data = []
     for larsCode in propCod[prop]:
+        if larsCode not in tables[prop]:
+            continue
+
         tab = tables[prop][larsCode]
         tab = tab.loc[tab['smiles'] == smiles]
 
@@ -258,6 +268,7 @@ def getSelectedDataForProperty(dbsConfig):
 
 
 # get selected data from old format file
+# for dns and hvp
 def getSelectedData(dbsConfig):
     fieFile = sys.argv[3]
     isomers = IO.readFieFile(fieFile)
