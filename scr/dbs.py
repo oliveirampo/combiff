@@ -70,8 +70,6 @@ class createRelationCompound(abstractFactoryRelation):
 class createRelationDensity(abstractFactoryRelation):
     def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        # super(createRelationDensity, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
-        #         prop_convert, tem_convert, pre_convert, marker, color)
         abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
@@ -220,13 +218,138 @@ class createRelationVaporPressure(abstractFactoryRelation):
         return Equation.pvpEquation1()
 
 
+class createRelationSurfaceTension(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsSurfaceTension(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
+class createRelationIsothermalCompressibility(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsIsothermalCompressibility(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
+class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsThermalExpansionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
+class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsHeatCapacityAtConstantPressure(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
+class createRelationPermittivity(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsPermittivity(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
+class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsSelfDiffusionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
+class createRelationViscosity(abstractFactoryRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                 prop_convert, tem_convert, pre_convert, marker, color):
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
+
+    def createRelation(self):
+        return dbsRelation.dbsViscosity(self.larsCode, self.prop, self.rel, self.var, self.col,
+                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+
+    def createParser(self):
+        return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
+
+    def createEquation(self):
+        return Equation.nullEquation()
+
+
 class dbsEntry():
     classes = {'cpd': createRelationCompound, 'dns': createRelationDensity, 'hvp': createRelationVaporizationEnthalpy,
                'hvb': createRelationVaporizationEnthalpyAtBoilingPoint,
                'mlp': createRelationMeltingPoint, 'blp': createRelationBoilingPoint,
                'tem_cri': createRelationCriticalTemperature,
-               'pvp': createRelationVaporPressure}
-
+               'pvp': createRelationVaporPressure,
+               'gam': createRelationSurfaceTension,
+               'kap': createRelationIsothermalCompressibility,
+               'alp': createRelationThermalExpansionCoefficient,
+               'hcp': createRelationHeatCapacityAtConstantPressure,
+               'eps': createRelationPermittivity,
+               'diffus': createRelationSelfDiffusionCoefficient,
+               'etd': createRelationViscosity}
 
     def __init__(self, larsCode):
         self.larsCode = larsCode
@@ -260,6 +383,9 @@ class dbsEntry():
 
 
     def getFactory(self, rel):
+        if not rel in self.factories:
+            s = 'dbs.json({}) or relation not implemented'.format(self.larsCode)
+            raise myExceptions.NoKey(rel, s)
         return self.factories[rel]
 
 

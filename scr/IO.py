@@ -103,10 +103,17 @@ def readCiDSmilesFile(fileName):
     return df
 
 
-def writeToJson(dbsConfig, selectedData):
+def writeSelectedDataToJson(dbsConfig, selectedData):
     fileName = dbsConfig.getOutFileName('molJsonFile')
 
     with open(fileName, "w") as outfile:
         json.dump(selectedData, outfile, cls=myDataStructure.SelectedDataEncoder, indent=1)
 
 
+def openSelectedDataFile(dbsConfig):
+    fileName = dbsConfig.getOutFileName('molJsonFile')
+
+    with open(fileName) as jsonFile:
+        selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)
+
+    return selectedData

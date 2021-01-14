@@ -27,6 +27,7 @@ def run(dbsConfig):
     molecules = IO.readFlsFile(flsFile, isomers)
 
     print('Canonicalizing SMILES')
+    canonicalizeSmiles(molecules)
     # this will take a while
     cidSmiles = IO.readCiDSmilesFile(cidSmilesFile)
 
@@ -43,6 +44,13 @@ def run(dbsConfig):
         matchMol(cidSmiles, molecules, data, molDataFile)
     else:
         downloadMol(molecules, data, molDataFile)
+
+
+def canonicalizeSmiles(molecules):
+    for mol in molecules:
+        smiles = mol.smiles
+        smiles = utils.getCanonicalSmiles(smiles)
+        mol.smiles = smiles
 
 
 # get idenfier from already downloaded file
@@ -135,6 +143,7 @@ def compare(mol, mol_pcp):
     name_pcp = mol_pcp.iupac_name
     form_pcp = mol_pcp.molecular_formula
 
+    match_smiles(mol.smiles, mol_pcp.canonical_smiles)
     match_formula(mol.form, form_pcp)
 
     mol.cid_pcp = cid_pcp
@@ -146,6 +155,14 @@ def compare(mol, mol_pcp):
     mol.cas = cas
 
     print('\t{} {}'.format(mol.name_pcp, mol.cas))
+
+
+def match_smiles(reference, smiles):
+    if reference != smiles:
+        smiles = utils.getCanonicalSmiles(smiles)
+        if reference != smiles:
+            print('Smiles do not match: {} != {}'.format(reference, smiles))
+            sys.exit(123)
 
 
 def match_formula(reference, formula):

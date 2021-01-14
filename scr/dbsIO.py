@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 import pandas as pd
-import sys
 import os
 
 
-import dbs
 import myExceptions
 
 
@@ -74,6 +72,8 @@ def readTable(i, lines, columns, fileName):
 
         else:
             if len(row) != len(columns):
+                print(columns)
+                print(row)
                 raise myExceptions.WrongNumberofColumns(fileName)
 
             table.append(row)

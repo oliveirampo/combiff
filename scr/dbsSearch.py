@@ -1,7 +1,6 @@
 from datetime import datetime
 import configparser
 import pandas as pd
-import numpy as np
 import sys
 import os
 
@@ -48,11 +47,6 @@ class dbsConfiguration():
         val = float(val)
         return val
 
-    def getProps(self):
-        props = self.config.get('plot', 'prop')
-        props = props.split()
-        return props
-
     def getVariable(self, propName):
         try:
             var = self.config.get('globalVariables', propName)
@@ -60,6 +54,15 @@ class dbsConfiguration():
             raise myExceptions.VariableNotDefined(propName)
 
         return var
+
+    def getPropList(self):
+        propList = self.config.get('plot', 'prop')
+        propList = propList.split()
+        return propList
+
+    def getRelations(self, prop):
+        relations = self.config.get('relations', prop)
+        return relations
 
     def getNumberOfPoints(self):
         n = self.config.get('plot', 'nPoints')
@@ -113,7 +116,7 @@ def run(dbsConfig):
 
 def getCids(dbsEntries, molList, path):
     for larsCode in dbsEntries:
-        #print(larsCode)
+        # print(larsCode)
         factory = dbsEntries[larsCode].getFactory('cpd')
         parser = factory.createParser()
         dfTable = parser.readRelation(path)
@@ -173,13 +176,10 @@ def getCidsofSynonyms(dbsEntries, molList):
 
 
 def getData(molList, dbsEntries, path, propCod):
-    # print(molList)
     columns = molList.columns.tolist()
     tables = {}
 
-    # propCod = dbs.dbsEntry.propCod
     for prop in propCod:
-        #print(prop)
         tables[prop] = {}
 
         for larsCod in propCod[prop]:
@@ -207,8 +207,6 @@ def getFileName(prop, larsCode):
 
 
 def writeData(tables):
-    #print()
-
     for prop in tables:
         #print(prop)
         for larsCode in tables[prop]:

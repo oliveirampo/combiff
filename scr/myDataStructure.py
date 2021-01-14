@@ -14,6 +14,8 @@ class SelectedData():
         self.blp_src = ''
         self.tem_cri = ''
         self.tem_cri_src = ''
+        self.eps = ''
+        self.eps_src = ''
         self.properties = {}
 
 
@@ -73,6 +75,12 @@ class SelectedData():
         self.tem_cri_src = src
 
 
+    def addPermittivity(self, data):
+        tem, src = self.getTransitionPoint(data)
+        self.eps = tem
+        self.eps_src = src
+
+
     def addProperty(self, prop, mask, x_values, y_values, pre_values, src_values):
         pre = pre_values[mask]
         tem = x_values[mask]
@@ -85,6 +93,9 @@ class SelectedData():
 
     def addPropertyHelper(self, prop, property):
         self.properties[prop] = property
+
+    def hasProperty(self, prop):
+        return prop in self.properties
 
 
 class Property():

@@ -126,7 +126,8 @@ class dbsDensity(DbsRelation):
     def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
         if prop_convert == '':
             prop_convert = 1.0
-        super(dbsDensity, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
+        super(dbsDensity, self).__init__(larsCode, prop, rel, var, col, pre, tem,
+                                         prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def getData(self, tab, defaultPressure):
@@ -292,5 +293,79 @@ class dbsVaporPressure(DbsRelation):
         return [[]]
 
 
+class dbsSurfaceTension(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')
 
 
+class dbsIsothermalCompressibility(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')
+
+
+class dbsThermalExpansionCoefficient(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')
+
+
+class dbsHeatCapacityAtConstantPressure(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')
+
+
+class dbsPermittivity(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')
+
+
+class dbsSelfDiffusionCoefficient(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')
+
+
+class dbsViscosity(DbsRelation):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+        if prop_convert == '':
+            prop_convert = 1.0
+        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
+                             marker, color)
+
+    def getData(self, tab, defaultPressure):
+        raise myExceptions.MethodNotImplemented('Method not implemented: getData')

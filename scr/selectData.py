@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import sys
+import os
 
 
 import myDataStructure
@@ -102,7 +103,7 @@ def manualSelection(dbsConfig):
 
             selectedData.addProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values)
             allSelectedData.append(selectedData)
-            IO.writeToJson(dbsConfig, allSelectedData)
+            IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
 
 
 def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles):
@@ -195,6 +196,68 @@ def checkArrays(prop, x_values, y_values, pre_values, src_values):
 
 
 # get selected data from old format file
+# and add to already available output file
+def getSelectedDataForProperty(dbsConfig):
+    fieFile = sys.argv[3]
+    isomers = IO.readFieFile(fieFile)
+
+    oldMolListFileName = sys.argv[4]    # 01_mol.lst
+
+    molList = pd.read_csv(oldMolListFileName, sep='\s+',
+              names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles', 'old_cod', 'x', 'y', 'z'],
+              usecols=['cod', 'inchi', 'smiles'])
+
+    propCod = dbsConfig.getPropCod()
+    allSelectedData = IO.openSelectedDataFile(dbsConfig)
+
+    for prop in propCod:
+        print(prop)
+        if prop == 'diffus':
+            oldSelectedDataFileName = 'old_files/{}.src'.format('self_dif')
+        elif prop == 'etd':
+            oldSelectedDataFileName = 'old_files/{}.src'.format('vis_d')
+        else:
+            oldSelectedDataFileName = 'old_files/{}.src'.format(prop)
+
+        if not os.path.exists(oldSelectedDataFileName):
+            continue
+
+        srcData = pd.read_csv(oldSelectedDataFileName, sep='\s+', names=['cod', 'pre', 'tem', 'val', 'src'])
+        srcData = srcData.loc[srcData['val'].astype(str) != '%']
+
+        mergedData = pd.merge(srcData, molList, how='inner', on='cod')
+
+        # get smiles in common
+        isomers = utils.canonicalizeSmiles(isomers)
+        mergedData = utils.canonicalizeSmiles(mergedData)
+        mergedData = pd.merge(isomers, mergedData, how='inner', on='smiles')
+
+        for selectedData in allSelectedData:
+            smiles = selectedData.smiles
+
+            df = mergedData.loc[mergedData['smiles'] == smiles]
+
+            nRows = df.shape[0]
+            if nRows == 0:
+                continue
+            elif nRows != 1:
+                print(df)
+                print('More than one row for {} {}'.format(smiles, prop))
+                sys.exit(1)
+
+            pre = df['pre'].values
+            tem = df['tem'].values
+            val = df['val'].values
+            src = df['src'].values
+
+            if not selectedData.hasProperty(prop):
+                property = myDataStructure.Property(prop, pre, tem, val, src)
+                selectedData.addPropertyHelper(prop, property)
+
+    IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+
+
+# get selected data from old format file
 def getSelectedData(dbsConfig):
     fieFile = sys.argv[3]
     isomers = IO.readFieFile(fieFile)
@@ -214,6 +277,12 @@ def getSelectedData(dbsConfig):
     srcData['letter'] = srcData['cod'].str[-1]
     srcData['cod'] = srcData['cod'].str[:-1]
 
+    # remove row which start with \#
+    for idx, row in srcData.iterrows():
+        cod = row['cod']
+        if cod[0] == '#':
+            srcData.drop([idx], inplace=True)
+
     df = pd.merge(srcData, molList, how='left', on='cod')
 
     # get smiles in common
@@ -226,66 +295,71 @@ def getSelectedData(dbsConfig):
     allSelectedData = []
     codes = df['cod'].unique()
     for cod in codes:
+        appendData = False
         dfTmp = df.loc[df['cod'] == cod]
 
         smiles = dfTmp['smiles'].unique()
         if smiles.shape[0] != 1:
             continue
         smiles = smiles[0]
+        # print('COD:', cod)
 
         selectedData = myDataStructure.SelectedData(smiles)
 
-        val = dfTmp['mlp'].unique()
-        src = dfTmp['mlp_src'].unique()
-        if val.shape[0] != 1:
-            print('No unique mlp')
-        if src.shape[0] != 1:
-            print('No unique mlp src')
-        if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
-            data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+        addProperty('mlp', dfTmp, selectedData)
+        addProperty('blp', dfTmp, selectedData)
+        addProperty('tem_cri', dfTmp, selectedData)
+        addProperty('eps', dfTmp, selectedData)
+
+        data = dfTmp[dfTmp['dns'].astype(str) != '%']
+        data = data[data['dns'].astype(str) != '-']
+        if data.shape[0] != 0:
+            pre = data['pre'].values
+            tem = data['tem'].values
+            dns = data['dns'].values
+            src = data['dns_src'].values
+            appendData = True
+
+            property = myDataStructure.Property('dns', pre, tem, dns, src)
+            selectedData.addPropertyHelper('dns', property)
+
+        data = dfTmp[dfTmp['hvp'].astype(str) != '%']
+        data = data[data['hvp'].astype(str) != '-']
+        if data.shape[0] != 0:
+            pre = data['pre'].values
+            tem = data['tem'].values
+            hvp = data['hvp'].values
+            src = data['hvp_src'].values
+            appendData = True
+
+            property = myDataStructure.Property('hvp', pre, tem, hvp, src)
+            selectedData.addPropertyHelper('hvp', property)
+
+        if appendData:
+            allSelectedData.append(selectedData)
+            IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+
+
+def addProperty(prop, dfTmp, selectedData):
+    val = dfTmp[prop].unique()
+    src = dfTmp['{}_src'.format(prop)].unique()
+
+    if val.shape[0] != 1:
+        print('No unique {}'.format(prop))
+
+    if src.shape[0] != 1:
+        print('No unique {} src'.format(prop))
+
+    if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
+        data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+
+        if prop == 'mlp':
             selectedData.addMeltingPoint(data)
-
-        val = dfTmp['blp'].unique()
-        src = dfTmp['blp_src'].unique()
-        if val.shape[0] != 1:
-            print('No unique blp')
-        if src.shape[0] != 1:
-            print('No unique blp src')
-        if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
-            data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+        elif prop == 'blp':
             selectedData.addBoilingPoint(data)
-
-        val = dfTmp['tem_cri'].unique()
-        src = dfTmp['tem_cri_src'].unique()
-        if val.shape[0] != 1:
-            print('No unique tem_cri')
-        if src.shape[0] != 1:
-            print('No unique tem_cri src')
-        if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
-            data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
+        elif prop == 'tem_cri':
             selectedData.addCriticalTemperature(data)
-
-        data = dfTmp[dfTmp['dns'] != '%']
-        data = data[data['dns'] != '-']
-        pre = data['pre'].values
-        tem = data['tem'].values
-        dns = data['dns'].values
-        src = data['dns_src'].values
-        property = myDataStructure.Property('dns', pre, tem, dns, src)
-        selectedData.addPropertyHelper('dns', property)
-
-        data = dfTmp[dfTmp['hvp'] != '%']
-        data = data[data['hvp'] != '-']
-        pre = data['pre'].values
-        tem = data['tem'].values
-        hvp = data['hvp'].values
-        src = data['hvp_src'].values
-
-        property = myDataStructure.Property('hvp', pre, tem, hvp, src)
-        selectedData.addPropertyHelper('hvp', property)
-
-        allSelectedData.append(selectedData)
-        IO.writeToJson(dbsConfig, allSelectedData)
-
-
-
+        elif prop == 'eps':
+            selectedData.addPermittivity(data)
+        else:
+            raise myExceptions.PropertyNotImplemented('selectData::addProperty({})'.format(prop))

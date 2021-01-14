@@ -16,14 +16,14 @@ def main():
         job = sys.argv[1]
 
         if job == '-getIdentifier':
-            dbsConfigurationFile = 'inp/dbs.conf'
+            dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             getIdentifiers.run(dbsConfig)
 
         elif job == '-writeIdentifier':
             writeIdentifiers.run()
 
-        elif job == '-dbsSearch':
+        elif job == '-searchProp':
             dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             dbsSearch.run(dbsConfig)
@@ -38,20 +38,21 @@ def main():
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.getSelectedData(dbsConfig)
 
+        elif job == '-addSelectedDataForProperty':
+            dbsConfigurationFile = '../inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            selectData.getSelectedDataForProperty(dbsConfig)
+
         elif job == '-plotData':
             dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             plotData.plotAll(dbsConfig)
 
-    except (myExceptions.ArgError) as err:
+    # except (myExceptions.MethodNotImplemented) as err:
+    #     print(err)
+    except (myExceptions.VariableNotDefined) as err:
         print(err)
-    except (myExceptions.NoFile, myExceptions.WrongNumberofColumns) as err:
-        print(err)
-    except (myExceptions.NoKey, myExceptions.WrongProperty) as err:
-        print(err)
-    except (myExceptions.VariableNotDefined, myExceptions.EquationNotImplemented) as err:
-        print(err)
-    except (myExceptions.MethodNotImplemented) as err:
+    except (KeyError, Exception) as err:
         print(err)
 
 
