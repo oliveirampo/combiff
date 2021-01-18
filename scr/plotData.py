@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import json
 import sys
 import os
@@ -11,7 +12,7 @@ import myDataStructure
 
 def select_data(fig, ax, x_values, y_valies):
     highlighter = select_points.Highlighter(ax, x_values, y_valies)
-    # plt.show()
+    plt.show()
     selected_regions = highlighter.mask
 
     plt.close(fig)
@@ -35,7 +36,7 @@ def plotPoint(tem, val, larsCode, marker, color, linewidth):
 
 
 def plotStart(mlpVar, mlp, blpVar, blp, tem_cri_var, tem_cri):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8, 5))
     ax = fig.add_subplot(111)
 
     plotRoomTem()
@@ -73,13 +74,15 @@ def plotTransitionPoint(prop, data):
             print('Variable not defined: {}'.format(prop))
             sys.exit(123)
 
+        tem = tem.astype(np.float)
         plt.axvline(x=tem, color=color, linestyle='--', label=label)
 
 
 # plot hvp at boiling point
-def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values):
-    prop = 'hvb'
+def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values,
+            fid_values, met_values):
 
+    prop = 'hvb'
     for larsCode in propCod[prop]:
         tab = tables[prop][larsCode]
         tab = tab.loc[tab['smiles'] == smiles]
@@ -92,23 +95,25 @@ def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_va
 
         data = dbsRelation.getData(tab, defaultPressure)
 
-        pre = data[:, 0]
-        tem = data[:, 1]
-        val = data[:, 2]
-        marker = dbsRelation.marker
-        color = dbsRelation.color
+        pre, tem, val, fid, met, marker, color = dbsRelation.getValues(data)
+
         plt.plot(tem, val, linewidth=0.0, marker=marker, c=color, label=larsCode)
 
-        saveDataPts(tem, val, larsCode, x_values, y_values, src_values)
+        for i in range(tem.shape[0]):
+            addCode(tem[i], val[i], fid[i])
+
+        saveDataPts(tem, val, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
         for p in pre: pre_values.append(p)
 
 
-def saveDataPts(X, Y, src, x_values, y_values, src_values):
-    for x in X:
-        x_values.append(float(x))
+def saveDataPts(X, Y, src, fid, met, x_values, y_values, src_values, fid_values, met_values):
+    for i in range(X.shape[0]):
+        x_values.append(float(X[i]))
+        y_values.append(float(Y[i]))
+        fid_values.append(fid[i])
+        met_values.append(met[i])
+
         src_values.append(src)
-    for y in Y:
-        y_values.append(float(y))
 
 
 def markPressure(X, Y, P, defaultPressure):
@@ -116,6 +121,8 @@ def markPressure(X, Y, P, defaultPressure):
         x = X[i]
         y = Y[i]
         p = P[i]
+
+        #p = float(p)
 
         if p > defaultPressure:
             addCode(x, y, '*')
@@ -125,29 +132,12 @@ def addCode(x, y, fid):
     plt.annotate(fid, (x, y))
 
 
-def getYLabel(prop):
-    labels = {
-        'dns': r'$\rho_{liq} \/ [kg \cdot m^{-1}]$',
-        'hvp': r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$',
-        'gam': r'S\gam [TODO]S',
-        'kap': r'$\kappa [TODO]$',
-        'alp': r'$\alpha [TODO]$',
-        'hcp': r'$c_P [TODO]$',
-        'eps': r'$\epsilon$',
-        'diffus': r'$D [TODO]$',
-        'etd': r'$\alpha [TODO]$',
-    }
-    yLab = labels[prop]
-    return yLab
-
-
-def plotDetails(fig, row, prop):
+def plotDetails(fig, row, yLabel):
     frm = row['frm']
     nam = row['nam']
     cas = row['cas']
     inchi = row['inchi']
 
-    yLabel = getYLabel(prop)
     xLabel = 'T [K]'
     plt.ylabel(yLabel)
     plt.xlabel(xLabel)

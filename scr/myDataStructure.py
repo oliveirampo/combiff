@@ -1,5 +1,7 @@
 from numpy import ndarray
+import numpy as np
 import json
+import sys
 
 
 import selectData
@@ -43,6 +45,8 @@ class SelectedData():
         data['blp_src'] = self.blp_src
         data['tem_cri'] = self.tem_cri
         data['tem_cri_src'] = self.tem_cri_src
+        data['eps'] = self.eps
+        data['eps_src'] = self.eps_src
         data['prop'] = self.properties
 
         return data
@@ -81,31 +85,60 @@ class SelectedData():
         self.eps_src = src
 
 
-    def addProperty(self, prop, mask, x_values, y_values, pre_values, src_values):
+    def appendProperty(self, prop, mask, x_values, y_values, pre_values, src_values, fid_values, met_values):
         pre = pre_values[mask]
         tem = x_values[mask]
         val = y_values[mask]
         src = src_values[mask]
+        fid = fid_values[mask]
+        met = met_values[mask]
 
-        property = Property(prop, pre, tem, val, src)
-        self.addPropertyHelper(prop, property)
+        if prop in self.properties:
+            self.properties[prop].appendData(pre, tem, val, src, fid, met)
+        else:
+            self.properties[prop] = Property(prop, pre, tem, val, src, fid, met)
 
 
-    def addPropertyHelper(self, prop, property):
+    def addProperty(self, prop, property):
         self.properties[prop] = property
+
 
     def hasProperty(self, prop):
         return prop in self.properties
 
 
+    def hasData(self, prop):
+        if prop not in self.properties:
+            return False
+
+        property = self.properties[prop]
+        val = np.asarray(property.val, dtype=np.float32)
+        return len(val) != 0
+
+
+    def getProperty(self, prop):
+        return self.properties[prop]
+
+
 class Property():
-    def __init__(self, prop, pre, tem, val, src):
+    def __init__(self, prop, pre, tem, val, src, fid, met):
         self.prop = prop
         self.pre = pre
         self.tem = tem
         self.val = val
         self.src = src
+        self.fid = fid
+        self.met = met
 
+
+    def appendData(self, pre, tem, val, src, fid, met):
+        for i in range(len(val)):
+            self.pre.append(pre[i])
+            self.tem.append(tem[i])
+            self.val.append(val[i])
+            self.src.append(src[i])
+            self.fid.append(fid[i])
+            self.met.append(met[i])
 
     def toDict(self):
         data = {}
@@ -115,8 +148,9 @@ class Property():
         data['tem'] = self.tem
         data['val'] = self.val
         data['src'] = self.src
+        data['fid'] = self.fid
+        data['met'] = self.met
         return data
-
 
     def toString(self):
         s = '{}\n{}\n{}\n{}\n{}'.format(self.prop, self.pre, self.tem, self.val, self.src)
@@ -152,6 +186,8 @@ def selectedDataDecoder(obj):
         blp_src = obj['blp_src']
         tem_cri = obj['tem_cri']
         tem_cri_src = obj['tem_cri_src']
+        eps = obj['eps']
+        eps_src = obj['eps_src']
 
         data.mlp = mlp
         data.mlp_src = mlp_src
@@ -159,6 +195,8 @@ def selectedDataDecoder(obj):
         data.blp_src = blp_src
         data.tem_cri = tem_cri
         data.tem_cri_src = tem_cri_src
+        data.eps = eps
+        data.eps_src = eps_src
 
         propertiesDict = obj.get('prop')
         propertiesString = json.dumps(propertiesDict)
@@ -179,13 +217,11 @@ def propertyDecoder(obj):
         tem = obj['tem']
         val = obj['val']
         src = obj['src']
+        fid = obj['fid']
+        met = obj['met']
 
-        property = Property(prop, pre, tem, val, src)
+        property = Property(prop, pre, tem, val, src, fid, met)
         return property
 
     else:
         return obj
-
-
-
-

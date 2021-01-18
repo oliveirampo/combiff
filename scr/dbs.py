@@ -11,7 +11,7 @@ import Equation
 
 
 class abstractFactoryRelation(ABC):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
         self.larsCode = larsCode
         self.prop = prop
@@ -23,6 +23,9 @@ class abstractFactoryRelation(ABC):
         self.tem = tem
         #
         self.eqn = eqn
+        #
+        self.fid = fid
+        self.met = met
         #
         self.prop_convert = prop_convert
         self.tem_convert = tem_convert
@@ -48,15 +51,14 @@ class abstractFactoryRelation(ABC):
 
 
 class createRelationCompound(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationCompound, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+        super(createRelationCompound, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                 prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsCompound(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem,
-                                       self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsCompound(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -68,15 +70,14 @@ class createRelationCompound(abstractFactoryRelation):
 
 
 class createRelationDensity(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsDensity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem,
-                                      self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsDensity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -94,15 +95,14 @@ class createRelationDensity(abstractFactoryRelation):
 
 
 class createRelationVaporizationEnthalpy(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationVaporizationEnthalpy, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+        super(createRelationVaporizationEnthalpy, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                 prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsVaporizationEnthalpy(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre,
-            self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsVaporizationEnthalpy(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -119,15 +119,14 @@ class createRelationVaporizationEnthalpy(abstractFactoryRelation):
 
 
 class createRelationVaporizationEnthalpyAtBoilingPoint(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
         super(createRelationVaporizationEnthalpyAtBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem,
-            eqn, prop_convert, tem_convert, pre_convert, marker, color)
+            eqn, fid, met, prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsVaporizationEnthalpyAtBoilingPoint(self.larsCode, self.prop, self.rel, self.var, self.col,
-            self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsVaporizationEnthalpyAtBoilingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -139,15 +138,14 @@ class createRelationVaporizationEnthalpyAtBoilingPoint(abstractFactoryRelation):
 
 
 class createRelationBoilingPoint(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+        super(createRelationBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
             prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsBoilingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem,
-            self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsBoilingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -159,15 +157,14 @@ class createRelationBoilingPoint(abstractFactoryRelation):
 
 
 class createRelationMeltingPoint(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationMeltingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+        super(createRelationMeltingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
             prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsMeltingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem,
-            self.prop_convert, self.pre_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsMeltingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -179,15 +176,14 @@ class createRelationMeltingPoint(abstractFactoryRelation):
 
 
 class createRelationCriticalTemperature(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationCriticalTemperature, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+        super(createRelationCriticalTemperature, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                 prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsCriticalTemperature(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre,
-            self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsCriticalTemperature(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -199,15 +195,14 @@ class createRelationCriticalTemperature(abstractFactoryRelation):
 
 
 class createRelationVaporPressure(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationVaporPressure, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn,
+        super(createRelationVaporPressure, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                 prop_convert, tem_convert, pre_convert, marker, color)
 
 
     def createRelation(self):
-        return dbsRelation.dbsVaporPressure(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre,
-            self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsVaporPressure(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
 
     def createParser(self):
@@ -219,14 +214,13 @@ class createRelationVaporPressure(abstractFactoryRelation):
 
 
 class createRelationSurfaceTension(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsSurfaceTension(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsSurfaceTension(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -236,14 +230,13 @@ class createRelationSurfaceTension(abstractFactoryRelation):
 
 
 class createRelationIsothermalCompressibility(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsIsothermalCompressibility(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsIsothermalCompressibility(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -253,14 +246,13 @@ class createRelationIsothermalCompressibility(abstractFactoryRelation):
 
 
 class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsThermalExpansionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsThermalExpansionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -270,14 +262,13 @@ class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
 
 
 class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsHeatCapacityAtConstantPressure(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsHeatCapacityAtConstantPressure(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -287,14 +278,13 @@ class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
 
 
 class createRelationPermittivity(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsPermittivity(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsPermittivity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -304,14 +294,13 @@ class createRelationPermittivity(abstractFactoryRelation):
 
 
 class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsSelfDiffusionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsSelfDiffusionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -321,14 +310,13 @@ class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
 
 
 class createRelationViscosity(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                  prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn,
+        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                                          prop_convert, tem_convert, pre_convert, marker, color)
 
     def createRelation(self):
-        return dbsRelation.dbsViscosity(self.larsCode, self.prop, self.rel, self.var, self.col,
-                    self.pre, self.tem, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
+        return dbsRelation.dbsViscosity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
@@ -363,10 +351,10 @@ class dbsEntry():
         s = s[:-1]
         return s
 
-
-    def createFactory(larsCode, prop, rel, var, col, pre, tem, eqn, prop_convert, tem_convert, pre_convert, marker, color):
+    def createFactory(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
+                      prop_convert, tem_convert, pre_convert, marker, color):
         try:
-            factory = dbsEntry.classes[prop](larsCode, prop, rel, var, col, pre, tem, eqn,
+            factory = dbsEntry.classes[prop](larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                     prop_convert, tem_convert, pre_convert, marker, color)
         except TypeError as err:
             raise myExceptions.MethodNotImplemented(err.args[0])
@@ -412,7 +400,7 @@ def dbsEntryDecoder(obj):
                 if 'tem' in obj[prop]:
                     tem = obj[prop]['tem']
 
-                prop_convert = ''
+                prop_convert = 1.0
                 if 'prop_convert' in obj[prop]:
                     prop_convert = obj[prop]['prop_convert']
                     prop_convert = float(prop_convert)
@@ -432,14 +420,22 @@ def dbsEntryDecoder(obj):
                     eqn = obj[prop]['eqn']
 
                 marker = ''
-                if 'marker' in  obj[prop]:
+                if 'marker' in obj[prop]:
                     marker = obj[prop]['marker']
 
                 color = ''
                 if 'color' in  obj[prop]:
                     color = obj[prop]['color']
 
-                factory = dbsEntry.createFactory(larsCode, prop, rel, var, col, pre, tem, eqn,
+                fid = ''
+                if 'fid' in obj[prop]:
+                    fid = obj[prop]['fid']
+
+                met = ''
+                if 'method' in obj[prop]:
+                    met = obj[prop]['method']
+
+                factory = dbsEntry.createFactory(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                     prop_convert, tem_convert, pre_convert, marker, color)
                 entry.addFactory(factory)
 

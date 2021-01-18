@@ -35,30 +35,53 @@ def manualSelection(dbsConfig):
     tem_room = dbsConfig.getDefaultTemperature()
     nPoints = dbsConfig.getNumberOfPoints()
 
-    allSelectedData = []
+    allSelectedData = {}
+    selectedDataFileName = dbsConfig.getOutFileName('molJsonFile')
+    if os.path.exists(selectedDataFileName):
+        allSelectedData = IO.openSelectedDataFile(dbsConfig)
 
     for prop in properties:
+        print(prop)
+
+        propLabel = ''
+
         for idx, row in molList.iterrows():
             smiles = row['smiles']
-            selectedData = myDataStructure.SelectedData(smiles)
 
-            mlpVar, mlp = getTransitionPoint('meltingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
-            blpVar, blp = getTransitionPoint('boilingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
-            tem_cri_var, tem_cri = getTransitionPoint('criticalTemperature', defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
+            selectedData = myDataStructure.SelectedData(smiles)
+            if smiles in allSelectedData:
+                selectedData = allSelectedData[smiles]
+
+            if selectedData.hasData(prop):
+                continue
+
+            mlpVar, mlp = getTransitionPoint('meltingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables,
+                                             smiles)
+            blpVar, blp = getTransitionPoint('boilingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables,
+                                             smiles)
+            tem_cri_var, tem_cri = getTransitionPoint('criticalTemperature', defaultPressure, dbsConfig, dbsEntries,
+                                                      propCod, tables, smiles)
 
             selectedData.addMeltingPoint(mlp)
             selectedData.addBoilingPoint(blp)
             selectedData.addCriticalTemperature(tem_cri)
 
+            print(smiles)
+
             fig, ax = plotData.plotStart(mlpVar, mlp, blpVar, blp, tem_cri_var, tem_cri)
+            if selectedData.hasProperty(prop):
+                plotSelectedData(prop, selectedData, defaultPressure)
 
             x_values = []
             y_values = []
             pre_values = []
             src_values = []
+            fid_values = []
+            met_values = []
 
             if dbsConfig.isHvp(prop):
-                plotData.plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values, pre_values)
+                plotData.plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_values, src_values,
+                                 pre_values, fid_values, met_values)
 
             for larsCode in propCod[prop]:
                 if larsCode not in tables[prop]:
@@ -69,34 +92,46 @@ def manualSelection(dbsConfig):
                 if tab.shape[0] == 0:
                     continue
 
-                dbsEntry = dbsEntries[larsCode]
-                dbsFactory = dbsEntry.getFactory(prop)
-                dbsRelation = dbsFactory.createRelation()
-                data = dbsRelation.getData(tab, defaultPressure)
+                data, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
 
-                pre = data[:, 0]
-                tem = data[:, 1]
-                val = data[:, 2]
+                propLabel = dbsRelation.getLabel()
 
-                marker = dbsRelation.marker
-                color = dbsRelation.color
+                pre, tem, val, fid, met, marker, color = dbsRelation.getValues(data)
+
                 plotData.plotPoint(tem, val, larsCode, marker, color, linewidth=0.0)
 
-                plotData.saveDataPts(tem, val, larsCode, x_values, y_values, src_values)
+                for i in range(tem.shape[0]):
+                    t = tem[i]
+                    v = val[i]
+                    f = fid[i]
+                    m = met[i]
+                    plotData.addCode(t, v, f)
+                    plotData.addCode(t, v, m)
+
+                plotData.saveDataPts(tem, val, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
                 for p in pre: pre_values.append(p)
 
                 equation = dbsFactory.createEquation()
-                X, Y, note = equation.getData(tem_room, nPoints, tab, dbsRelation.tem_convert)
+                X, Y, fid = equation.getData(tem_room, nPoints, tab, dbsRelation.tem_convert)
+
                 if len(X) > 0:
+                    met = X.shape[0] * ['']
+
                     plotData.plotPoint(X, Y, larsCode, marker, color, linewidth=1.0)
-                    plotData.saveDataPts(X, Y, larsCode, x_values, y_values, src_values)
-                    plotData.addCode(X[0], Y[0], note[0])
+                    print('TODO - something about next line')
+                    sys.exit(123)
+                    plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
+                    plotData.addCode(X[0], Y[0], fid[0])
 
                     for x in X: pre_values.append(defaultPressure)
 
-            x_values, y_values, pre_values, src_values = checkArrays(prop, x_values, y_values, pre_values, src_values)
+                    propLabel = dbsRelation.getLabel()
 
-            plotData.plotDetails(fig, row, prop)
+            x_values, y_values, pre_values, src_values, fid_values, met_values = checkArrays(prop, x_values, y_values,
+                                                                                            pre_values, src_values,
+                                                                                            fid_values, met_values)
+
+            plotData.plotDetails(fig, row, propLabel)
 
             addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_values, src_values)
 
@@ -105,12 +140,34 @@ def manualSelection(dbsConfig):
             selectedPointsMask = []
             if len(x_values) != 0: selectedPointsMask = plotData.select_data(fig, ax, x_values, y_values)
 
-            selectedData.addProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values)
-            allSelectedData.append(selectedData)
-            # IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+            selectedData.appendProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values, fid_values, met_values)
+
+            if selectedData.hasData(prop):
+                allSelectedData[smiles] = selectedData
+                IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+                print('STOP'); sys.exit(123)
 
             plt.close(fig)
 
+
+def getData(prop, larsCode, dbsEntries, tab, defaultPressure):
+    dbsEntry = dbsEntries[larsCode]
+    dbsFactory = dbsEntry.getFactory(prop)
+    dbsRelation = dbsFactory.createRelation()
+    data = dbsRelation.getData(tab, defaultPressure)
+    return data, dbsRelation, dbsFactory
+
+
+def plotSelectedData(propVar, selectedData, defaultPressure):
+    prop = selectedData.getProperty(propVar)
+    pre = np.asarray(prop.pre, dtype=np.float32)
+    tem = np.asarray(prop.tem, dtype=np.float32)
+    val = np.asarray(prop.val, dtype=np.float32)
+    src = np.asarray(prop.src)
+
+    for i in range(val.shape[0]):
+        plotData.plotPoint(tem[i], val[i], src[i], 'd', 'gold', linewidth=0.0)
+    plotData.markPressure(tem, val, pre, defaultPressure)
 
 
 def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles):
@@ -127,15 +184,12 @@ def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod
         if tab.shape[0] == 0:
             continue
 
-        dbsEntry = dbsEntries[larsCode]
-        dbsFactory = dbsEntry.getFactory(prop)
-        dbsRelation = dbsFactory.createRelation()
-        dat = dbsRelation.getData(tab, defaultPressure)
+        dat, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
 
         values = dat.shape[0] * [[0.0, larsCode]]
 
         for i in range(dat.shape[0]):
-            values[i][0] = dat[i, 0]
+            values[i][0] = dat[i, dbsRelation.propCol]
         data.extend(values)
 
     data = pd.DataFrame(data, columns=['tem', 'larsCode'])
@@ -189,11 +243,13 @@ def getHighestTransitionPoint(var, data):
     return maxVal
 
 
-def checkArrays(prop, x_values, y_values, pre_values, src_values):
+def checkArrays(prop, x_values, y_values, pre_values, src_values, fid_values, met_values):
     x_values = np.asarray(x_values)
     y_values = np.asarray(y_values)
     pre_values = np.asarray(pre_values)
     src_values = np.asarray(src_values)
+    fid_values = np.asarray(fid_values)
+    met_values = np.asarray(met_values)
 
     if len(x_values) != len(y_values):
         print('len(tem) != len({})\n'.format(prop))
@@ -202,7 +258,7 @@ def checkArrays(prop, x_values, y_values, pre_values, src_values):
         print('len(tem) != len(pre) for prop = {}\n'.format(prop))
         sys.exit(1)
 
-    return x_values, y_values, pre_values, src_values
+    return x_values, y_values, pre_values, src_values, fid_values, met_values
 
 
 # get selected data from old format file
@@ -221,7 +277,6 @@ def getSelectedDataForProperty(dbsConfig):
     allSelectedData = IO.openSelectedDataFile(dbsConfig)
 
     for prop in propCod:
-        print(prop)
         if prop == 'diffus':
             oldSelectedDataFileName = 'old_files/{}.src'.format('self_dif')
         elif prop == 'etd':
@@ -231,6 +286,8 @@ def getSelectedDataForProperty(dbsConfig):
 
         if not os.path.exists(oldSelectedDataFileName):
             continue
+
+        print(prop)
 
         srcData = pd.read_csv(oldSelectedDataFileName, sep='\s+', names=['cod', 'pre', 'tem', 'val', 'src'])
         srcData = srcData.loc[srcData['val'].astype(str) != '%']
@@ -242,8 +299,8 @@ def getSelectedDataForProperty(dbsConfig):
         mergedData = utils.canonicalizeSmiles(mergedData)
         mergedData = pd.merge(isomers, mergedData, how='inner', on='smiles')
 
-        for selectedData in allSelectedData:
-            smiles = selectedData.smiles
+        for smiles in allSelectedData:
+            selectedData = allSelectedData[smiles]
 
             df = mergedData.loc[mergedData['smiles'] == smiles]
 
@@ -260,9 +317,12 @@ def getSelectedDataForProperty(dbsConfig):
             val = df['val'].values
             src = df['src'].values
 
+            fid = val.shape[0] * ['']
+            met = val.shape[0] * ['']
+
             if not selectedData.hasProperty(prop):
-                property = myDataStructure.Property(prop, pre, tem, val, src)
-                selectedData.addPropertyHelper(prop, property)
+                property = myDataStructure.Property(prop, pre, tem, val, src, fid, met)
+                selectedData.addProperty(prop, property)
 
     IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
 
@@ -303,7 +363,7 @@ def getSelectedData(dbsConfig):
 
     # create selectedData
     # write to json file
-    allSelectedData = []
+    allSelectedData = {}
     codes = df['cod'].unique()
     for cod in codes:
         appendData = False
@@ -331,8 +391,11 @@ def getSelectedData(dbsConfig):
             src = data['dns_src'].values
             appendData = True
 
-            property = myDataStructure.Property('dns', pre, tem, dns, src)
-            selectedData.addPropertyHelper('dns', property)
+            fid = dns.shape[0] * ['']
+            met = dns.shape[0] * ['']
+
+            property = myDataStructure.Property('dns', pre, tem, dns, src, fid, met)
+            selectedData.addProperty('dns', property)
 
         data = dfTmp[dfTmp['hvp'].astype(str) != '%']
         data = data[data['hvp'].astype(str) != '-']
@@ -343,11 +406,14 @@ def getSelectedData(dbsConfig):
             src = data['hvp_src'].values
             appendData = True
 
-            property = myDataStructure.Property('hvp', pre, tem, hvp, src)
-            selectedData.addPropertyHelper('hvp', property)
+            fid = hvp.shape[0] * ['']
+            met = hvp.shape[0] * ['']
+
+            property = myDataStructure.Property('hvp', pre, tem, hvp, src, fid, met)
+            selectedData.addProperty('hvp', property)
 
         if appendData:
-            allSelectedData.append(selectedData)
+            allSelectedData[smiles] = selectedData
             IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
 
 

@@ -48,7 +48,9 @@ def main():
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             plotData.plotAll(dbsConfig)
 
-    except (myExceptions.MethodNotImplemented) as err:
+    # except (myExceptions.MethodNotImplemented) as err:
+    #     print(err); sys.exit(1)
+    except (myExceptions.PropertyNotImplemented) as err:
         print(err); sys.exit(1)
     except (myExceptions.VariableNotDefined) as err:
         print(err); sys.exit(1)

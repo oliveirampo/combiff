@@ -141,6 +141,13 @@ def mergeByCas(larsCode, molList, dfTable):
     dfTable = dfTable.loc[dfTable['cas'] != '%']
 
     df = pd.merge(molList, dfTable, how='left', on='cas')
+
+    if df.shape[0] != molList.shape[0]:
+        print('Multiple rows with same cas:')
+        res = df[df.isin(df[df.duplicated(subset=['cas'])])].dropna(subset=['cas'])
+        print(larsCode, res['cas'].values)
+        sys.exit(1)
+
     return df
 
 

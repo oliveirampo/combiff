@@ -6,8 +6,64 @@ import sys
 import myExceptions
 
 
+# if pre == '%' -> pre = 1.0 kPa
+def checkPressure(col, data, defaultPressure):
+    for i in range(data[:, col].shape[0]):
+        try:
+            data[i, col] = float(data[i, col])
+
+        except ValueError:
+            val = data[i, col]
+            if val == '%':
+                data[i, col] = defaultPressure
+            else:
+                raise myExceptions.WrongProperty('pressure', val, 'dbsRelation::checkPressure()')
+
+    # data[:,col] = data[:,col].astype(np.float)
+    return data
+
+
+# if tem == '%' -> remove data
+def checkTemperature(col, data):
+    rm = []
+
+    for i in range(data[:, col].shape[0]):
+        try:
+            data[i, col] = float(data[i, col])
+
+        except ValueError:
+            val = data[i, col]
+            if val == 'sat._liquid':
+                rm.append(i)
+            else:
+                raise myExceptions.WrongProperty('temperature', val, 'dbsRelation:checkTemperaure()')
+
+    for idx in reversed(rm):
+        data = np.delete(data, idx, 0)
+
+    return data
+
+
+# if val == '%' -> remove data
+def checkProperty(col, data, propVar):
+    for i in range(data[:, col].shape[0]):
+        try:
+            data[i, col] = float(data[i, col])
+
+        except ValueError:
+            val = data[i, col]
+            if '+/-' in val:
+                val = val.split('+/-')
+                val = float(val[0])
+                data[i, col] = val
+            else:
+                print(data[i, col])
+                raise myExceptions.WrongProperty(propVar, val, 'dbsRelation::checkProperty()')
+
+
 class DbsRelation(ABC):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, fid, met, prop_convert, tem_convert, pre_convert,
+                 marker, color):
         self.larsCode = larsCode
         self.prop = prop
         self.rel = rel
@@ -17,18 +73,50 @@ class DbsRelation(ABC):
         self.pre = pre
         self.tem = tem
         #
+        self.fid = fid
+        self.met = met
+        #
         self.prop_convert = prop_convert
         self.tem_convert = tem_convert
         self.pre_convert = pre_convert
         #
         self.marker = marker
         self.color = color
-
+        #
+        self.preCol = 0
+        self.temCol = 1
+        self.propCol = 2
+        self.fidCol = 3
+        self.metCol = 4
 
     @abstractmethod
-    def getData(self, tab, defaultPressure):
+    def getLabel(self):
         pass
 
+    def getValues(self, data):
+        pre = data[:, self.preCol]
+        tem = data[:, self.temCol]
+        val = data[:, self.propCol]
+        fid = data[:, self.fidCol]
+        met = data[:, self.metCol]
+
+        pre = pre.astype(np.float)
+        tem = tem.astype(np.float)
+        val = val.astype(np.float)
+
+        return pre, tem, val, fid, met, self.marker, self.color
+
+    def getData(self, tab, defaultPressure):
+        data = self.getDataHelper(tab, defaultPressure)
+        data = self.checkData(data, defaultPressure)
+
+        col = self.temCol
+        self.convertTemperature(col, data)
+
+        col = self.propCol
+        self.convertProperty(col, data)
+
+        return data
 
     def getDataHelper(self, tab, defaultPressure):
         columns = self.col.strip().split()
@@ -40,321 +128,144 @@ class DbsRelation(ABC):
         preVar = self.pre
         temVar = self.tem
         propVar = self.var
-        # print(preVar, temVar, propVar)
+        fidVar = self.fid
+        metVar = self.met
 
-        if (preVar != '') and (temVar != ''):
-            data = tab[[preVar, temVar, propVar]]
-            data = data.to_numpy()
-        elif (preVar == '') and (temVar == ''):
-            data = tab[[propVar]]
-            data = data.to_numpy()
-        else:
-            data = tab[[temVar, propVar]]
-            data = data.to_numpy()
+        prop = tab[propVar].to_numpy()
 
-            pre = data.shape[0] * [[defaultPressure]]
-            data = np.hstack((pre, data))
+        pre = prop.shape[0] * [defaultPressure]
+        if preVar != '':
+            pre = tab[preVar].to_numpy()
 
-        # indexes = tab.index.to_numpy()
-        return data
+        tem = prop.shape[0] * [298.15]
+        if temVar != '':
+            tem = tab[temVar].to_numpy()
 
+        fid = prop.shape[0] * ['']
+        if fidVar != '':
+            fid = tab[fidVar].to_numpy()
 
-    # if pre == '%' -> pre = 1.0 kPa
-    def checkPressure(self, col, data, defaultPressure):
-        for i in range(data[:, col].shape[0]):
-            try:
-                data[i, col] = float(data[i, col])
+        met = prop.shape[0] * ['']
+        if metVar != '':
+            met = tab[metVar].to_numpy()
 
-            except ValueError:
-                val = data[i, col]
-                if val == '%':
-                    data[i, col] = defaultPressure
-                else:
-                    raise myExceptions.WrongProperty('pressure', val, 'dbsRelation::checkPressure()')
-
-
-    # if tem == '%' -> remove data
-    def checkTemperature(self, col, data):
-        rm = []
-
-        for i in range(data[:, col].shape[0]):
-            try:
-                data[i, col] = float(data[i, col])
-
-            except ValueError:
-                val = data[i, col]
-                if val == 'sat._liquid':
-                    rm.append(i)
-                else:
-                    raise myExceptions.WrongProperty('temperature', val, 'dbsRelation:checkTemperaure()')
-
-        for idx in reversed(rm):
-            data = np.delete(data, idx, 0)
+        # [pre, tem, prop, fid, met]
+        data = np.hstack((np.vstack(pre), np.vstack(tem), np.vstack(prop), np.vstack(fid), np.vstack(met)))
 
         return data
-
-
-    # if val == '%' -> remove data
-    def checkProperty(self, col, data, propVar):
-        for i in range(data[:, col].shape[0]):
-            try:
-                data[i, col] = float(data[i, col])
-
-            except ValueError:
-                val = data[i, col]
-                if '+/-' in val:
-                    val = val.split('+/-')
-                    val = float(val[0])
-                    data[i, col] = val
-                else:
-                    print(data[i, col])
-                    raise myExceptions.WrongProperty(propVar, val, 'dbsRelation::checkProperty()')
-
-
-    def checkTransitionTemperature(self, data):
-        # check property value
-        col = 0
-        propVar = self.var
-        self.checkProperty(col, data, propVar)
-
-        # convert temperature
-        tem_convert = self.tem_convert
-        if tem_convert != 0:
-            data = data + tem_convert
-
 
     def checkData(self, data, defaultPressure):
         # check pressure
-        col = 0
-        self.checkPressure(col, data, defaultPressure)
+        data = checkPressure(self.preCol, data, defaultPressure)
 
         # check temperature
-        col = 1
-        data = self.checkTemperature(col, data)
+        data = checkTemperature(self.temCol, data)
 
         # check property value
-        col = 2
         propVar = self.var
-        self.checkProperty(col, data, propVar)
-
-        # convert temperature
-        tem_convert = self.tem_convert
-        if tem_convert != 0.0:
-            data[:, 1] = tem_convert + data[:, 1]
-
-        prop_convert = self.prop_convert
-        if prop_convert != 1:
-            data[:, 2] = prop_convert * data[:, 2]
+        checkProperty(self.propCol, data, propVar)
 
         return data
+
+    def convertTemperature(self, col, data):
+        tem_convert = self.tem_convert
+        if tem_convert != 0.0:
+            data[:, col] = tem_convert + data[:, col].astype(np.float)
+
+    def convertProperty(self, col, data):
+        prop_convert = self.prop_convert
+        if prop_convert != 1:
+            data[:, col] = prop_convert * data[:, col]
 
 
 class dbsCompound(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        super(dbsCompound, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def getData(self, tab, defaultPressure):
         raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getData{}')
 
+    def getLabel(self):
+        raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getLabel{}')
+
 
 class dbsDensity(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        super(dbsDensity, self).__init__(larsCode, prop, rel, var, col, pre, tem,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$\rho_{liq} \/ [kg \cdot m^{-1}]$'
 
 
 class dbsVaporizationEnthalpy(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        super(dbsVaporizationEnthalpy, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
-
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
 
 
 class dbsVaporizationEnthalpyAtBoilingPoint(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        super(dbsVaporizationEnthalpyAtBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
-
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
+    def getLabel(self):
+        return r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
 
 
 class dbsMeltingPoint(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 0.0
-        super(dbsMeltingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
+    def convertProperty(self, col, data):
+        prop_convert = self.prop_convert
+        if prop_convert != 1:
+            data[:, col] = prop_convert + data[:, col].astype(np.float)
 
-
-    def getData(self, tab, defaultPressure):
-        data = super(dbsMeltingPoint, self).getDataHelper(tab, defaultPressure)
-        super(dbsMeltingPoint, self).checkTransitionTemperature(data)
-
-        # convert temperature
-        col = 0
-        tem_convert = self.tem_convert
-        if tem_convert != 0.0:
-            data[:, col] = tem_convert + data[:, col]
-
-        return data
+    def getLabel(self):
+        return r'$Tm [K]$'
 
 
 class dbsBoilingPoint(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 0.0
-        super(dbsBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
+    def convertProperty(self, col, data):
+        prop_convert = self.prop_convert
+        if prop_convert != 1:
+            data[:, col] = prop_convert + data[:, col].astype(np.float)
 
-
-    def getData(self, tab, defaultPressure):
-        data = super(dbsBoilingPoint, self).getDataHelper(tab, defaultPressure)
-        super(dbsBoilingPoint, self).checkTransitionTemperature(data)
-
-        # convert temperature
-        col = 0
-        tem_convert = self.tem_convert
-        if tem_convert != 0.0:
-            data[:, col] = tem_convert + data[:, col]
-
-        return data
+    def getLabel(self):
+        return r'$Tb [K]$'
 
 
 class dbsCriticalTemperature(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 0.0
-        super(dbsCriticalTemperature, self).__init__(larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color)
+    def convertProperty(self, col, data):
+        prop_convert = self.prop_convert
+        if prop_convert != 1:
+            data[:, col] = prop_convert + data[:, col]
 
-
-    def getData(self, tab, defaultPressure):
-        data = super(dbsCriticalTemperature, self).getDataHelper(tab, defaultPressure)
-        super(dbsCriticalTemperature, self).checkTransitionTemperature(data)
-        return data
+    def getLabel(self):
+        return r'$Tc [K]$'
 
 
 class dbsVaporPressure(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-
-    def getData(self, tab, defaultPressure):
-        # return [[]]
-        raise myExceptions.MethodNotImplemented('Method not implemented: dbsVaporPressure.getData')
+    def getLabel(self):
+        return r'$v_P [bar]$'
 
 
 class dbsSurfaceTension(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$\gamma \, [mN \cdot m^{-1}]$'
 
 
 class dbsIsothermalCompressibility(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$\kappa \, [10^{-5} bar^{-1}]$'
 
 
 class dbsThermalExpansionCoefficient(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$\alpha \, [10^{-4} \, K^{-1}]$'
 
 
 class dbsHeatCapacityAtConstantPressure(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-
-        if data.shape[1] == 1:
-            pre = [data.shape[0] * defaultPressure]
-            tem = [data.shape[0] * 298.15]
-
-            data = np.column_stack((pre, tem, data[:,0]))
-
-            return data
-
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$c_P \, [JK^{-1} \, mol^{-1}]$'
 
 
 class dbsPermittivity(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-    def getData(self, tab, defaultPressure):
-        raise myExceptions.MethodNotImplemented('Method not implemented: dbsPermittivity.getData')
+    def getLabel(self):
+        return r'$\epsilon$'
 
 
 class dbsSelfDiffusionCoefficient(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-    def getData(self, tab, defaultPressure):
-        data = DbsRelation.getDataHelper(self, tab, defaultPressure)
-        data = DbsRelation.checkData(self, data, defaultPressure)
-        return data
+    def getLabel(self):
+        return r'$D \, [10^{-9} \, m^2 \, s^{-1}]$'
 
 
 class dbsViscosity(DbsRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert, marker, color):
-        if prop_convert == '':
-            prop_convert = 1.0
-        DbsRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, prop_convert, tem_convert, pre_convert,
-                             marker, color)
-
-    def getData(self, tab, defaultPressure):
-        raise myExceptions.MethodNotImplemented('Method not implemented: dbsViscosity.getData')
+    def getLabel(self):
+        return r'$\eta \, [10^{-3} \, Pa \cdot s]$'
