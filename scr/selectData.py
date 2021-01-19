@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import os
 
-
+from dbsRelation import getLabel
 import myDataStructure
 import myExceptions
 import dbsSearch
@@ -43,7 +43,7 @@ def manualSelection(dbsConfig):
     for prop in properties:
         print(prop)
 
-        propLabel = ''
+        propLabel = getLabel(prop)
 
         for idx, row in molList.iterrows():
             smiles = row['smiles']
@@ -65,8 +65,6 @@ def manualSelection(dbsConfig):
             selectedData.addMeltingPoint(mlp)
             selectedData.addBoilingPoint(blp)
             selectedData.addCriticalTemperature(tem_cri)
-
-            print(smiles)
 
             fig, ax = plotData.plotStart(mlpVar, mlp, blpVar, blp, tem_cri_var, tem_cri)
             if selectedData.hasProperty(prop):
@@ -92,9 +90,8 @@ def manualSelection(dbsConfig):
                 if tab.shape[0] == 0:
                     continue
 
+                # print(larsCode, smiles)
                 data, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
-
-                propLabel = dbsRelation.getLabel()
 
                 pre, tem, val, fid, met, marker, color = dbsRelation.getValues(data)
 
@@ -115,17 +112,14 @@ def manualSelection(dbsConfig):
                 X, Y, fid = equation.getData(tem_room, nPoints, tab, dbsRelation.tem_convert)
 
                 if len(X) > 0:
+                    fid = X.shape[0] * [fid[0]]
                     met = X.shape[0] * ['']
 
                     plotData.plotPoint(X, Y, larsCode, marker, color, linewidth=1.0)
-                    print('TODO - something about next line')
-                    sys.exit(123)
                     plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
                     plotData.addCode(X[0], Y[0], fid[0])
 
                     for x in X: pre_values.append(defaultPressure)
-
-                    propLabel = dbsRelation.getLabel()
 
             x_values, y_values, pre_values, src_values, fid_values, met_values = checkArrays(prop, x_values, y_values,
                                                                                             pre_values, src_values,
@@ -143,9 +137,9 @@ def manualSelection(dbsConfig):
             selectedData.appendProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values, fid_values, met_values)
 
             if selectedData.hasData(prop):
+                print(smiles)
                 allSelectedData[smiles] = selectedData
                 IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
-                print('STOP'); sys.exit(123)
 
             plt.close(fig)
 

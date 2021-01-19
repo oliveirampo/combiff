@@ -84,6 +84,9 @@ def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_va
 
     prop = 'hvb'
     for larsCode in propCod[prop]:
+        if larsCode not in tables[prop]:
+            continue
+
         tab = tables[prop][larsCode]
         tab = tab.loc[tab['smiles'] == smiles]
         if tab.shape[0] == 0:

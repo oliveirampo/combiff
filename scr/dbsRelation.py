@@ -8,6 +8,8 @@ import myExceptions
 
 # if pre == '%' -> pre = 1.0 kPa
 def checkPressure(col, data, defaultPressure):
+    rm = []
+
     for i in range(data[:, col].shape[0]):
         try:
             data[i, col] = float(data[i, col])
@@ -16,10 +18,19 @@ def checkPressure(col, data, defaultPressure):
             val = data[i, col]
             if val == '%':
                 data[i, col] = defaultPressure
+
+            elif val == 'sat._liquid':
+                rm.append(i)
+
+            elif val == 'sat__liq':
+                rm.append(i)
+
             else:
                 raise myExceptions.WrongProperty('pressure', val, 'dbsRelation::checkPressure()')
 
-    # data[:,col] = data[:,col].astype(np.float)
+    for idx in reversed(rm):
+        data = np.delete(data, idx, 0)
+
     return data
 
 
@@ -33,9 +44,14 @@ def checkTemperature(col, data):
 
         except ValueError:
             val = data[i, col]
-            if val == 'sat._liquid':
+            if val == '%':
                 rm.append(i)
+            elif val == 'sat._liquid':
+                rm.append(i)
+            elif val.endswith('?'):
+                data[i, col] = val[:-1]
             else:
+                print(data[i, col])
                 raise myExceptions.WrongProperty('temperature', val, 'dbsRelation:checkTemperaure()')
 
     for idx in reversed(rm):
@@ -59,6 +75,31 @@ def checkProperty(col, data, propVar):
             else:
                 print(data[i, col])
                 raise myExceptions.WrongProperty(propVar, val, 'dbsRelation::checkProperty()')
+
+
+
+def getLabel(prop):
+    if prop == 'dns':
+        return dbsDensity.getLabel()
+    elif prop == 'hvp':
+        return dbsVaporizationEnthalpy.getLabel()
+    elif prop == 'gam':
+        return  dbsSurfaceTension.getLabel()
+    elif prop == 'kap':
+        return  dbsIsothermalCompressibility.getLabel()
+    elif prop == 'alp':
+        return  dbsThermalExpansionCoefficient.getLabel()
+    elif prop == 'hcp':
+        return  dbsHeatCapacityAtConstantPressure.getLabel()
+    elif prop == 'eps':
+        return  dbsPermittivity.getLabel()
+    elif prop == 'diffus':
+        return  dbsSelfDiffusionCoefficient.getLabel()
+    elif prop == 'etd':
+        return  dbsViscosity.getLabel()
+    else:
+        print('No such property: {}'.format(prop))
+        sys.exit(1)
 
 
 class DbsRelation(ABC):
@@ -90,7 +131,7 @@ class DbsRelation(ABC):
         self.metCol = 4
 
     @abstractmethod
-    def getLabel(self):
+    def getLabel():
         pass
 
     def getValues(self, data):
@@ -175,29 +216,29 @@ class DbsRelation(ABC):
     def convertProperty(self, col, data):
         prop_convert = self.prop_convert
         if prop_convert != 1:
-            data[:, col] = prop_convert * data[:, col]
+            data[:, col] = prop_convert * data[:, col].astype(np.float)
 
 
 class dbsCompound(DbsRelation):
     def getData(self, tab, defaultPressure):
         raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getData{}')
 
-    def getLabel(self):
+    def getLabel():
         raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getLabel{}')
 
 
 class dbsDensity(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\rho_{liq} \/ [kg \cdot m^{-1}]$'
 
 
 class dbsVaporizationEnthalpy(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
 
 
 class dbsVaporizationEnthalpyAtBoilingPoint(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
 
 
@@ -207,7 +248,7 @@ class dbsMeltingPoint(DbsRelation):
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col].astype(np.float)
 
-    def getLabel(self):
+    def getLabel():
         return r'$Tm [K]$'
 
 
@@ -217,7 +258,7 @@ class dbsBoilingPoint(DbsRelation):
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col].astype(np.float)
 
-    def getLabel(self):
+    def getLabel():
         return r'$Tb [K]$'
 
 
@@ -227,45 +268,45 @@ class dbsCriticalTemperature(DbsRelation):
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col]
 
-    def getLabel(self):
+    def getLabel():
         return r'$Tc [K]$'
 
 
 class dbsVaporPressure(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$v_P [bar]$'
 
 
 class dbsSurfaceTension(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\gamma \, [mN \cdot m^{-1}]$'
 
 
 class dbsIsothermalCompressibility(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\kappa \, [10^{-5} bar^{-1}]$'
 
 
 class dbsThermalExpansionCoefficient(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\alpha \, [10^{-4} \, K^{-1}]$'
 
 
 class dbsHeatCapacityAtConstantPressure(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$c_P \, [JK^{-1} \, mol^{-1}]$'
 
 
 class dbsPermittivity(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\epsilon$'
 
 
 class dbsSelfDiffusionCoefficient(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$D \, [10^{-9} \, m^2 \, s^{-1}]$'
 
 
 class dbsViscosity(DbsRelation):
-    def getLabel(self):
+    def getLabel():
         return r'$\eta \, [10^{-3} \, Pa \cdot s]$'

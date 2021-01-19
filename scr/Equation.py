@@ -1,7 +1,14 @@
 from abc import ABC, abstractmethod
 import numpy as np
 import math
-import sys
+
+
+def getInterval(tem_room, n, tem_min, tem_max):
+    rng = np.linspace(tem_min, tem_max, n)
+    if tem_room > tem_min and tem_room < tem_max:
+        idx = (np.abs(rng - tem_room)).argmin()
+        rng[idx] = tem_room
+    return rng
 
 
 class Equation(ABC):
@@ -192,10 +199,77 @@ class pvpEquation1(Equation):
         return P
 
 
-def getInterval(tem_room, n, tem_min, tem_max):
-    rng = np.linspace(tem_min, tem_max, n)
-    if tem_room > tem_min and tem_room < tem_max:
-        idx = (np.abs(rng - tem_room)).argmin()
-        rng[idx] = tem_room
-    return rng
+class gamEquation1(Equation):
+    def __init__(self):
+        pass
 
+    def addCoefficients(self, tab):
+        a = tab['a_gam']
+        b = tab['b_gam']
+        n = tab['n_gam']
+        tem_min = tab['tem_min']
+        tem_max = tab['tem_max']
+
+        columns = tab.columns
+        if 'fid' in columns:
+            fid = tab['fid'].values
+        else:
+            fid = tab['met'].values
+
+        a = float(a)
+        b = float(b)
+        n = float(n)
+        tem_min = float(tem_min)
+        tem_max = float(tem_max)
+
+        self.a = a
+        self.b = b
+        self.n = n
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
+
+    def compute(self, tem):
+        a = self.a
+        b = self.b
+        n = self.n
+        return a * (1 - tem / b) ** n
+
+
+class alpEquation1(Equation):
+    def __init__(self):
+        pass
+
+    def addCoefficients(self, tab):
+        a = tab['a_alp']
+        b = tab['b_alp']
+        n = tab['n_alp']
+        tem_min = tab['tem_min']
+        tem_max = tab['tem_max']
+
+        columns = tab.columns
+        if 'fid' in columns:
+            fid = tab['fid'].values
+        else:
+            fid = tab['met'].values
+
+        a = float(a)
+        b = float(b)
+        n = float(n)
+        tem_min = float(tem_min)
+        tem_max = float(tem_max)
+
+        self.a = a
+        self.b = b
+        self.n = n
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
+
+    def compute(self, tem):
+        a = self.a
+        b = self.b
+        n = self.n
+        exp = math.pow(1 - (tem / b), n)
+        val = a * exp
+        return val

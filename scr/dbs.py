@@ -34,29 +34,20 @@ class abstractFactoryRelation(ABC):
         self.marker = marker
         self.color = color
 
-
     @abstractmethod
     def createRelation(self):
         pass
-
 
     @abstractmethod
     def createParser(self):
         pass
 
-
     @abstractmethod
-    def createEquation(self, type):
+    def createEquation(self):
         pass
 
 
 class createRelationCompound(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationCompound, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsCompound(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -70,12 +61,6 @@ class createRelationCompound(abstractFactoryRelation):
 
 
 class createRelationDensity(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsDensity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -95,12 +80,6 @@ class createRelationDensity(abstractFactoryRelation):
 
 
 class createRelationVaporizationEnthalpy(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationVaporizationEnthalpy, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsVaporizationEnthalpy(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -119,12 +98,6 @@ class createRelationVaporizationEnthalpy(abstractFactoryRelation):
 
 
 class createRelationVaporizationEnthalpyAtBoilingPoint(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationVaporizationEnthalpyAtBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem,
-            eqn, fid, met, prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsVaporizationEnthalpyAtBoilingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -138,12 +111,6 @@ class createRelationVaporizationEnthalpyAtBoilingPoint(abstractFactoryRelation):
 
 
 class createRelationBoilingPoint(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationBoilingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-            prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsBoilingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -157,12 +124,6 @@ class createRelationBoilingPoint(abstractFactoryRelation):
 
 
 class createRelationMeltingPoint(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationMeltingPoint, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-            prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsMeltingPoint(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -176,12 +137,6 @@ class createRelationMeltingPoint(abstractFactoryRelation):
 
 
 class createRelationCriticalTemperature(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationCriticalTemperature, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsCriticalTemperature(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -195,12 +150,6 @@ class createRelationCriticalTemperature(abstractFactoryRelation):
 
 
 class createRelationVaporPressure(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                prop_convert, tem_convert, pre_convert, marker, color):
-        super(createRelationVaporPressure, self).__init__(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                prop_convert, tem_convert, pre_convert, marker, color)
-
-
     def createRelation(self):
         return dbsRelation.dbsVaporPressure(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -214,11 +163,6 @@ class createRelationVaporPressure(abstractFactoryRelation):
 
 
 class createRelationSurfaceTension(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsSurfaceTension(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -226,15 +170,16 @@ class createRelationSurfaceTension(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
     def createEquation(self):
-        return Equation.nullEquation()
+        if self.eqn == '':
+            return Equation.nullEquation()
+        elif self.eqn == 'gam_1':
+            return Equation.gamEquation1()
+        else:
+            typ = "\'\'".format(self.eqn)
+            raise myExceptions.EquationNotImplemented(typ)
 
 
 class createRelationIsothermalCompressibility(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsIsothermalCompressibility(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -246,11 +191,6 @@ class createRelationIsothermalCompressibility(abstractFactoryRelation):
 
 
 class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsThermalExpansionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -258,15 +198,16 @@ class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
     def createEquation(self):
-        return Equation.nullEquation()
+        if self.eqn == '':
+            return Equation.nullEquation()
+        elif self.eqn == 'alp_1':
+            return Equation.alpEquation1()
+        else:
+            typ = "\'\'".format(self.eqn)
+            raise myExceptions.EquationNotImplemented(typ)
 
 
 class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsHeatCapacityAtConstantPressure(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -278,11 +219,6 @@ class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
 
 
 class createRelationPermittivity(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsPermittivity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -294,11 +230,6 @@ class createRelationPermittivity(abstractFactoryRelation):
 
 
 class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsSelfDiffusionCoefficient(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 
@@ -310,11 +241,6 @@ class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
 
 
 class createRelationViscosity(abstractFactoryRelation):
-    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                 prop_convert, tem_convert, pre_convert, marker, color):
-        abstractFactoryRelation.__init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                                         prop_convert, tem_convert, pre_convert, marker, color)
-
     def createRelation(self):
         return dbsRelation.dbsViscosity(self.larsCode, self.prop, self.rel, self.var, self.col, self.pre, self.tem, self.fid, self.met, self.prop_convert, self.tem_convert, self.pre_convert, self.marker, self.color)
 

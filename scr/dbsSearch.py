@@ -1,6 +1,7 @@
 # from datetime import datetime
 import configparser
 import pandas as pd
+import numpy as np
 import sys
 import os
 
@@ -143,9 +144,9 @@ def mergeByCas(larsCode, molList, dfTable):
     df = pd.merge(molList, dfTable, how='left', on='cas')
 
     if df.shape[0] != molList.shape[0]:
-        print('Multiple rows with same cas:')
+        print('Multiple rows with same cas:', larsCode)
         res = df[df.isin(df[df.duplicated(subset=['cas'])])].dropna(subset=['cas'])
-        print(larsCode, res['cas'].values)
+        print(np.unique(res['cas'].values))
         sys.exit(1)
 
     return df

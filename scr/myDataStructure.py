@@ -93,14 +93,16 @@ class SelectedData():
         fid = fid_values[mask]
         met = met_values[mask]
 
-        if prop in self.properties:
-            self.properties[prop].appendData(pre, tem, val, src, fid, met)
-        else:
-            self.properties[prop] = Property(prop, pre, tem, val, src, fid, met)
+        if val.shape[0] != 0:
+            if prop in self.properties:
+                self.properties[prop].appendData(pre, tem, val, src, fid, met)
+            else:
+                self.properties[prop] = Property(prop, pre, tem, val, src, fid, met)
 
 
     def addProperty(self, prop, property):
-        self.properties[prop] = property
+        if property.val.shape[0] != 0:
+            self.properties[prop] = property
 
 
     def hasProperty(self, prop):
