@@ -87,10 +87,10 @@ def manualSelection(dbsConfig):
 
                 tab = tables[prop][larsCode]
                 tab = tab.loc[tab['smiles'] == smiles]
+
                 if tab.shape[0] == 0:
                     continue
 
-                # print(larsCode, smiles)
                 data, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
 
                 pre, tem, val, fid, met, marker, color = dbsRelation.getValues(data)
@@ -116,7 +116,8 @@ def manualSelection(dbsConfig):
                     met = X.shape[0] * ['']
 
                     plotData.plotPoint(X, Y, larsCode, marker, color, linewidth=1.0)
-                    plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
+                    plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values,
+                                         met_values)
                     plotData.addCode(X[0], Y[0], fid[0])
 
                     for x in X: pre_values.append(defaultPressure)
@@ -169,22 +170,18 @@ def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod
 
     data = []
     for larsCode in propCod[prop]:
-        if larsCode not in tables[prop]:
-            continue
+        if larsCode in tables[prop]:
+            tab = tables[prop][larsCode]
+            tab = tab.loc[tab['smiles'] == smiles]
 
-        tab = tables[prop][larsCode]
-        tab = tab.loc[tab['smiles'] == smiles]
+            if tab.shape[0] != 0:
+                dat, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
 
-        if tab.shape[0] == 0:
-            continue
+                values = dat.shape[0] * [[0.0, larsCode]]
 
-        dat, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
-
-        values = dat.shape[0] * [[0.0, larsCode]]
-
-        for i in range(dat.shape[0]):
-            values[i][0] = dat[i, dbsRelation.propCol]
-        data.extend(values)
+                for i in range(dat.shape[0]):
+                    values[i][0] = dat[i, dbsRelation.propCol]
+                data.extend(values)
 
     data = pd.DataFrame(data, columns=['tem', 'larsCode'])
     return prop, data

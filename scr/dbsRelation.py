@@ -84,19 +84,19 @@ def getLabel(prop):
     elif prop == 'hvp':
         return dbsVaporizationEnthalpy.getLabel()
     elif prop == 'gam':
-        return  dbsSurfaceTension.getLabel()
+        return dbsSurfaceTension.getLabel()
     elif prop == 'kap':
-        return  dbsIsothermalCompressibility.getLabel()
+        return dbsIsothermalCompressibility.getLabel()
     elif prop == 'alp':
-        return  dbsThermalExpansionCoefficient.getLabel()
+        return dbsThermalExpansionCoefficient.getLabel()
     elif prop == 'hcp':
-        return  dbsHeatCapacityAtConstantPressure.getLabel()
+        return dbsHeatCapacityAtConstantPressure.getLabel()
     elif prop == 'eps':
-        return  dbsPermittivity.getLabel()
+        return dbsPermittivity.getLabel()
     elif prop == 'diffus':
-        return  dbsSelfDiffusionCoefficient.getLabel()
+        return dbsSelfDiffusionCoefficient.getLabel()
     elif prop == 'etd':
-        return  dbsViscosity.getLabel()
+        return dbsViscosity.getLabel()
     else:
         print('No such property: {}'.format(prop))
         sys.exit(1)

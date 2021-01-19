@@ -62,24 +62,36 @@ class SelectedData():
 
 
     def addMeltingPoint(self, data):
+        if self.mlp != '':
+            return
+
         tem, src = self.getTransitionPoint(data)
         self.mlp = tem
         self.mlp_src = src
 
 
     def addBoilingPoint(self, data):
+        if self.blp != '':
+            return
+
         tem, src = self.getTransitionPoint(data)
         self.blp = tem
         self.blp_src = src
 
 
     def addCriticalTemperature(self, data):
+        if self.tem_cri != '':
+            return
+
         tem, src = self.getTransitionPoint(data)
         self.tem_cri = tem
         self.tem_cri_src = src
 
 
     def addPermittivity(self, data):
+        if self.eps != '':
+            return
+
         tem, src = self.getTransitionPoint(data)
         self.eps = tem
         self.eps_src = src
