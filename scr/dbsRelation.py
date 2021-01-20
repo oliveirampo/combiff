@@ -62,6 +62,8 @@ def checkTemperature(col, data):
 
 # if val == '%' -> remove data
 def checkProperty(col, data, propVar):
+    rm = []
+
     for i in range(data[:, col].shape[0]):
         try:
             data[i, col] = float(data[i, col])
@@ -72,9 +74,18 @@ def checkProperty(col, data, propVar):
                 val = val.split('+/-')
                 val = float(val[0])
                 data[i, col] = val
+
+            elif '<' in val:
+                rm.append(i)
+
             else:
                 print(data[i, col])
                 raise myExceptions.WrongProperty(propVar, val, 'dbsRelation::checkProperty()')
+
+    for idx in reversed(rm):
+        data = np.delete(data, idx, 0)
+
+    return data
 
 
 
@@ -134,6 +145,12 @@ class DbsRelation(ABC):
     def getLabel():
         pass
 
+    def getMarker(self):
+        return self.marker
+
+    def getColor(self):
+        return self.color
+
     def getValues(self, data):
         pre = data[:, self.preCol]
         tem = data[:, self.temCol]
@@ -145,7 +162,7 @@ class DbsRelation(ABC):
         tem = tem.astype(np.float)
         val = val.astype(np.float)
 
-        return pre, tem, val, fid, met, self.marker, self.color
+        return pre, tem, val, fid, met
 
     def getData(self, tab, defaultPressure):
         data = self.getDataHelper(tab, defaultPressure)
@@ -172,6 +189,10 @@ class DbsRelation(ABC):
         fidVar = self.fid
         metVar = self.met
 
+        if propVar not in tab:
+            print(tab.columns)
+            print(self.larsCode)
+            sys.exit(123)
         prop = tab[propVar].to_numpy()
 
         pre = prop.shape[0] * [defaultPressure]
@@ -204,7 +225,7 @@ class DbsRelation(ABC):
 
         # check property value
         propVar = self.var
-        checkProperty(self.propCol, data, propVar)
+        data = checkProperty(self.propCol, data, propVar)
 
         return data
 
@@ -244,6 +265,9 @@ class dbsVaporizationEnthalpyAtBoilingPoint(DbsRelation):
 
 class dbsMeltingPoint(DbsRelation):
     def convertProperty(self, col, data):
+        if data.shape[0] == 0:
+            return
+
         prop_convert = self.prop_convert
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col].astype(np.float)

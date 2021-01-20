@@ -43,7 +43,7 @@ class abstractFactoryRelation(ABC):
         pass
 
     @abstractmethod
-    def createEquation(self):
+    def createEquations(self, tab):
         pass
 
 
@@ -56,8 +56,8 @@ class createRelationCompound(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationDensity(abstractFactoryRelation):
@@ -69,11 +69,11 @@ class createRelationDensity(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
+    def createEquations(self, tab):
         if self.eqn == '':
-            return Equation.nullEquation()
+            return [Equation.nullEquation(tab)]
         elif self.eqn == 'dns_1':
-            return Equation.dnsEquation1()
+            return [Equation.dnsEquation1(tab)]
         else:
             typ = "\'\'".format(self.eqn)
             raise myExceptions.EquationNotImplemented(typ)
@@ -88,11 +88,11 @@ class createRelationVaporizationEnthalpy(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
+    def createEquations(self, tab):
         if self.eqn == '':
-            return Equation.nullEquation()
+            return [Equation.nullEquation(tab)]
         elif self.eqn == 'hvp_1':
-            return Equation.hvpEquation1()
+            return [Equation.hvpEquation1(tab)]
         else:
             raise myExceptions.EquationNotImplemented(type)
 
@@ -106,8 +106,8 @@ class createRelationVaporizationEnthalpyAtBoilingPoint(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationBoilingPoint(abstractFactoryRelation):
@@ -119,8 +119,8 @@ class createRelationBoilingPoint(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationMeltingPoint(abstractFactoryRelation):
@@ -132,8 +132,8 @@ class createRelationMeltingPoint(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationCriticalTemperature(abstractFactoryRelation):
@@ -145,8 +145,8 @@ class createRelationCriticalTemperature(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationVaporPressure(abstractFactoryRelation):
@@ -158,8 +158,8 @@ class createRelationVaporPressure(abstractFactoryRelation):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
 
-    def createEquation(self):
-        return Equation.pvpEquation1()
+    def createEquations(self, tab):
+        return [Equation.pvpEquation1(tab)]
 
 
 class createRelationSurfaceTension(abstractFactoryRelation):
@@ -169,11 +169,11 @@ class createRelationSurfaceTension(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
+    def createEquations(self, tab):
         if self.eqn == '':
-            return Equation.nullEquation()
+            return [Equation.nullEquation(tab)]
         elif self.eqn == 'gam_1':
-            return Equation.gamEquation1()
+            return [Equation.gamEquation1(tab)]
         else:
             typ = "\'\'".format(self.eqn)
             raise myExceptions.EquationNotImplemented(typ)
@@ -186,8 +186,8 @@ class createRelationIsothermalCompressibility(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
@@ -197,11 +197,11 @@ class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
+    def createEquations(self, tab):
         if self.eqn == '':
-            return Equation.nullEquation()
+            return [Equation.nullEquation(tab)]
         elif self.eqn == 'alp_1':
-            return Equation.alpEquation1()
+            return [Equation.alpEquation1(tab)]
         else:
             typ = "\'\'".format(self.eqn)
             raise myExceptions.EquationNotImplemented(typ)
@@ -214,8 +214,14 @@ class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        if self.eqn == '':
+            return [Equation.nullEquation(tab)]
+        elif self.eqn == 'hcp_123':
+            return [Equation.hcpEquation1(tab), Equation.hcpEquation2(tab), Equation.hcpEquation3(tab)]
+        else:
+            typ = "\'\'".format(self.eqn)
+            raise myExceptions.EquationNotImplemented(typ)
 
 
 class createRelationPermittivity(abstractFactoryRelation):
@@ -225,8 +231,8 @@ class createRelationPermittivity(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
@@ -236,8 +242,8 @@ class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class createRelationViscosity(abstractFactoryRelation):
@@ -247,8 +253,8 @@ class createRelationViscosity(abstractFactoryRelation):
     def createParser(self):
         return dbsIO.parserDefault(self.larsCode, self.rel, self.col)
 
-    def createEquation(self):
-        return Equation.nullEquation()
+    def createEquations(self, tab):
+        return [Equation.nullEquation(tab)]
 
 
 class dbsEntry():

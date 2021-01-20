@@ -13,17 +13,14 @@ def getInterval(tem_room, n, tem_min, tem_max):
 
 class Equation(ABC):
     @abstractmethod
+    def __init__(self, tab):
+        pass
+
+    @abstractmethod
     def compute(self, tem):
         pass
 
-
-    @abstractmethod
-    def addCoefficients(self, tab):
-        pass
-
-
-    def getData(self, tem_room, nPoints, tab, tem_convert):
-        self.addCoefficients(tab)
+    def getData(self, tem_room, nPoints, tem_convert):
         tem_min = self.tem_min
         tem_max = self.tem_max
         fid = self.fid
@@ -37,13 +34,11 @@ class Equation(ABC):
 
         return X, Y, fid
 
-
-    def getDataAt(self, tem, tab):
-        self.addCoefficients(tab)
+    def getDataAt(self, tem):
         tem_min = self.tem_min
         tem_max = self.tem_max
 
-        # all temperaturess should be in degree Celsius
+        # all temperatures should be in degree Celsius
         tem = tem - 273.15
 
         if (tem < tem_min) or (tem > tem_max):
@@ -54,32 +49,21 @@ class Equation(ABC):
 
 
 class nullEquation(Equation):
-    def __init__(self):
+    def __init__(self, tab):
         pass
-
 
     def compute(self, tem):
         pass
 
-
-    def addCoefficients(self, tab):
-        pass
-
-
-    def getData(self, tem_room, nPoints, tab, tem_convert):
+    def getData(self, tem_room, nPoints, tem_convert):
         return [], [], []
 
-
-    def getDataAt(self, tem, tab):
+    def getDataAt(self, tem):
         return []
 
 
-
 class dnsEquation1(Equation):
-    def __init__(self):
-        pass
-
-    def addCoefficients(self, tab):
+    def __init__(self, tab):
         a = tab['a_dns']
         b = tab['b_dns']
         c = tab['c_dns']
@@ -103,7 +87,6 @@ class dnsEquation1(Equation):
         self.tem_max = tem_max
         self.fid = fid
 
-
     def compute(self, tem):
         a = self.a
         b = self.b
@@ -114,11 +97,7 @@ class dnsEquation1(Equation):
 
 
 class hvpEquation1(Equation):
-    def __init__(self):
-        pass
-
-
-    def addCoefficients(self, tab):
+    def __init__(self, tab):
         a = tab['a_hvp']
         n = tab['n_hvp']
         tem_cri = tab['tem_cri']
@@ -144,7 +123,6 @@ class hvpEquation1(Equation):
         self.tem_max = tem_max
         self.fid = fid
 
-
     def compute(self, tem):
         a = self.a
         n = self.n
@@ -153,11 +131,7 @@ class hvpEquation1(Equation):
 
 
 class pvpEquation1(Equation):
-    def __init__(self):
-        pass
-
-
-    def addCoefficients(self, tab):
+    def __init__(self, tab):
         a = tab['a_pvp']
         b = tab['b_pvp']
         c = tab['c_pvp']
@@ -183,7 +157,6 @@ class pvpEquation1(Equation):
         self.tem_max = tem_max
         self.fid = fid
 
-
     def compute(self, tem):
         # Torr
         a = self.a
@@ -200,10 +173,7 @@ class pvpEquation1(Equation):
 
 
 class gamEquation1(Equation):
-    def __init__(self):
-        pass
-
-    def addCoefficients(self, tab):
+    def __init__(self, tab):
         a = tab['a_gam']
         b = tab['b_gam']
         n = tab['n_gam']
@@ -237,10 +207,7 @@ class gamEquation1(Equation):
 
 
 class alpEquation1(Equation):
-    def __init__(self):
-        pass
-
-    def addCoefficients(self, tab):
+    def __init__(self, tab):
         a = tab['a_alp']
         b = tab['b_alp']
         n = tab['n_alp']
@@ -272,4 +239,175 @@ class alpEquation1(Equation):
         n = self.n
         exp = math.pow(1 - (tem / b), n)
         val = a * exp
+        return val
+
+
+class hcpEquation1(Equation):
+    def __init__(self, tab):
+        tem_cri = tab['tem_cri']
+        a = tab['a_hcp_1']
+        b = tab['b_hcp_1']
+        c = tab['c_hcp_1']
+        d = tab['d_hcp_1']
+        tem_min = tab['tem_min_1']
+        tem_max = tab['tem_max_1']
+
+        columns = tab.columns
+        if 'fid' in columns:
+            fid = tab['fid'].values
+        else:
+            fid = ['']
+
+        a = float(a)
+        b = float(b)
+        c = float(c)
+        d = float(d)
+        tem_min = float(tem_min)
+        tem_max = float(tem_max)
+
+        self.tem_cri = tem_cri
+        self.fid = fid
+        #
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+
+    def getData(self, tem_room, nPoints, tem_convert):
+        if self.a == '%':
+            return [], [], []
+        X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
+        return X, Y, fid
+
+    def compute(self, tem):
+        a = self.a
+        b = self.b
+        c = self.c
+        d = self.d
+
+        val = a
+        val = val + b * math.pow(tem / 100, 1)
+        val = val + c * math.pow(tem / 100, 2)
+        val = val + d * math.pow(tem / 100, 3)
+        val = val * 8.314472
+        return val
+
+
+class hcpEquation2(Equation):
+    def __init__(self, tab):
+        columns = tab.columns
+        if 'fid' in columns:
+            fid = tab['fid'].values
+        else:
+            fid = ['']
+
+        a = tab['a_hcp_2'].values[0]
+        b = tab['b_hcp_2'].values[0]
+        c = tab['c_hcp_2'].values[0]
+        d = tab['d_hcp_2'].values[0]
+        tem_min = tab['tem_min_2'].values[0]
+        tem_max = tab['tem_max_2'].values[0]
+
+        if a != '%':
+            a = float(a)
+            b = float(b)
+            c = float(c)
+            d = float(d)
+            tem_min = float(tem_min)
+            tem_max = float(tem_max)
+
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
+
+    def getData(self, tem_room, nPoints, tem_convert):
+        if self.a == '%':
+            return [], [], []
+        X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
+        return X, Y, fid
+
+    def compute(self, tem):
+        a = self.a
+        b = self.b
+        c = self.c
+        d = self.d
+
+        val = a
+        val = val + b * math.pow(tem / 100, 1)
+        val = val + c * math.pow(tem / 100, 2)
+        val = val + d * math.pow(tem / 100, 3)
+        val = val * 8.314472
+        return val
+
+
+class hcpEquation3(Equation):
+    def __init__(self, tab):
+        columns = tab.columns
+        if 'fid' in columns:
+            fid = tab['fid'].values
+        else:
+            fid = ['']
+
+        a = tab['a_hcp_3'].values[0]
+        b = tab['b_hcp_3'].values[0]
+        c = tab['c_hcp_3'].values[0]
+        d = tab['d_hcp_3'].values[0]
+        e = tab['e_hcp_3'].values[0]
+        f = tab['f_hcp_3'].values[0]
+        tem_min = tab['tem_min_3'].values[0]
+        tem_max = tab['tem_max_3'].values[0]
+        tem_cri = tab['tem_cri'].values[0]
+
+        if a != '%':
+            a = float(a)
+            b = float(b)
+            c = float(c)
+            d = float(d)
+            e = float(e)
+            f = float(f)
+            tem_min = float(tem_min)
+            tem_max = float(tem_max)
+            tem_cri = float(tem_cri)
+
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.e = e
+        self.f = f
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.tem_cri = tem_cri
+        self.fid = fid
+
+    def getData(self, tem_room, nPoints, tem_convert):
+        if self.a == '%':
+            return [], [], []
+        X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
+        return X, Y, fid
+
+    def compute(self, tem):
+        a = self.a
+        b = self.b
+        c = self.c
+        d = self.d
+        e = self.e
+        f = self.f
+        tem_cri = self.tem_cri
+
+        tr = tem / tem_cri
+
+        val = a * math.log(1 - tr)
+        val = val + b / (1 - tr)
+        val = val + c * math.pow(tr, 0)
+        val = val + d * math.pow(tr, 1)
+        val = val + e * math.pow(tr, 2)
+        val = val + f * math.pow(tr, 3)
+        val = val * 8.314472
         return val

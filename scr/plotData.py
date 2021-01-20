@@ -96,9 +96,12 @@ def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_va
         dbsFactory = dbsEntry.getFactory(prop)
         dbsRelation = dbsFactory.createRelation()
 
+        marker = dbsRelation.getMarker()
+        color = dbsRelation.getColor()
+
         data = dbsRelation.getData(tab, defaultPressure)
 
-        pre, tem, val, fid, met, marker, color = dbsRelation.getValues(data)
+        pre, tem, val, fid, met = dbsRelation.getValues(data)
 
         plt.plot(tem, val, linewidth=0.0, marker=marker, c=color, label=larsCode)
 

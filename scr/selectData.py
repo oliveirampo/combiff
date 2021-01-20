@@ -42,7 +42,6 @@ def manualSelection(dbsConfig):
 
     for prop in properties:
         print(prop)
-
         propLabel = getLabel(prop)
 
         for idx, row in molList.iterrows():
@@ -91,36 +90,41 @@ def manualSelection(dbsConfig):
                 if tab.shape[0] == 0:
                     continue
 
-                data, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
+                dbsRelation, dbsFactory = getDbsData(prop, larsCode, dbsEntries)
+                marker = dbsRelation.getMarker()
+                color = dbsRelation.getColor()
+                if prop in tab:
+                    data = dbsRelation.getData(tab, defaultPressure)
 
-                pre, tem, val, fid, met, marker, color = dbsRelation.getValues(data)
+                    pre, tem, val, fid, met = dbsRelation.getValues(data)
 
-                plotData.plotPoint(tem, val, larsCode, marker, color, linewidth=0.0)
+                    plotData.plotPoint(tem, val, larsCode, marker, color, linewidth=0.0)
 
-                for i in range(tem.shape[0]):
-                    t = tem[i]
-                    v = val[i]
-                    f = fid[i]
-                    m = met[i]
-                    plotData.addCode(t, v, f)
-                    plotData.addCode(t, v, m)
+                    for i in range(tem.shape[0]):
+                        t = tem[i]
+                        v = val[i]
+                        f = fid[i]
+                        m = met[i]
+                        plotData.addCode(t, v, f)
+                        plotData.addCode(t, v, m)
 
-                plotData.saveDataPts(tem, val, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
-                for p in pre: pre_values.append(p)
+                    plotData.saveDataPts(tem, val, larsCode, fid, met, x_values, y_values, src_values, fid_values, met_values)
+                    for p in pre: pre_values.append(p)
 
-                equation = dbsFactory.createEquation()
-                X, Y, fid = equation.getData(tem_room, nPoints, tab, dbsRelation.tem_convert)
+                equations = dbsFactory.createEquations(tab)
+                for eq in equations:
+                    X, Y, fid = eq.getData(tem_room, nPoints, dbsRelation.tem_convert)
 
-                if len(X) > 0:
-                    fid = X.shape[0] * [fid[0]]
-                    met = X.shape[0] * ['']
+                    if len(X) > 0:
+                        fid = X.shape[0] * [fid[0]]
+                        met = X.shape[0] * ['']
 
-                    plotData.plotPoint(X, Y, larsCode, marker, color, linewidth=1.0)
-                    plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values,
-                                         met_values)
-                    plotData.addCode(X[0], Y[0], fid[0])
+                        plotData.plotPoint(X, Y, larsCode, marker, color, linewidth=1.0)
+                        plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values,
+                                             met_values)
+                        plotData.addCode(X[0], Y[0], fid[0])
 
-                    for x in X: pre_values.append(defaultPressure)
+                        for x in X: pre_values.append(defaultPressure)
 
             x_values, y_values, pre_values, src_values, fid_values, met_values = checkArrays(prop, x_values, y_values,
                                                                                             pre_values, src_values,
@@ -145,12 +149,11 @@ def manualSelection(dbsConfig):
             plt.close(fig)
 
 
-def getData(prop, larsCode, dbsEntries, tab, defaultPressure):
+def getDbsData(prop, larsCode, dbsEntries):
     dbsEntry = dbsEntries[larsCode]
     dbsFactory = dbsEntry.getFactory(prop)
     dbsRelation = dbsFactory.createRelation()
-    data = dbsRelation.getData(tab, defaultPressure)
-    return data, dbsRelation, dbsFactory
+    return dbsRelation, dbsFactory
 
 
 def plotSelectedData(propVar, selectedData, defaultPressure):
@@ -175,7 +178,8 @@ def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod
             tab = tab.loc[tab['smiles'] == smiles]
 
             if tab.shape[0] != 0:
-                dat, dbsRelation, dbsFactory = getData(prop, larsCode, dbsEntries, tab, defaultPressure)
+                dbsRelation, dbsFactory = getDbsData(prop, larsCode, dbsEntries)
+                dat = dbsRelation.getData(tab, defaultPressure)
 
                 values = dat.shape[0] * [[0.0, larsCode]]
 
@@ -189,12 +193,15 @@ def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod
 
 def addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_values, src_values):
     prop = 'pvp'
-    if not prop in propCod:
+    if prop not in propCod:
         return
 
     maxBlp = getHighestTransitionPoint('tem', blp)
 
     for larsCode in propCod[prop]:
+        if larsCode not in tables[prop]:
+            continue
+
         tab = tables[prop][larsCode]
         tab = tab.loc[tab['smiles'] == smiles]
         if tab.shape[0] == 0:
@@ -203,19 +210,20 @@ def addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_val
         dbsEntry = dbsEntries[larsCode]
         dbsFactory = dbsEntry.getFactory(prop)
 
-        equation = dbsFactory.createEquation()
+        equations = dbsFactory.createEquations(tab)
 
-        for i in range(len(src_values)):
-            src = src_values[i]
+        for eq in equations:
+            for i in range(len(src_values)):
+                src = src_values[i]
 
-            if src == 'YA14.6':
-                tem = x_values[i]
+                if src == 'YA14.6':
+                    tem = x_values[i]
 
-                if tem > maxBlp:
-                    val = equation.getDataAt(tem, tab)
-                    if len(val) == 1:
-                        val = val[0]
-                        pre_values[i] = val
+                    if tem > maxBlp:
+                        val = eq.getDataAt(tem)
+                        if len(val) == 1:
+                            val = val[0]
+                            pre_values[i] = val
 
 
 def getFirstValueOfTransitionPoint(data):
