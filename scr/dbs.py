@@ -218,7 +218,15 @@ class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
         if self.eqn == '':
             return [Equation.nullEquation(tab)]
         elif self.eqn == 'hcp_123':
-            return [Equation.hcpEquation1(tab), Equation.hcpEquation2(tab), Equation.hcpEquation3(tab)]
+            equations = []
+
+            for idx, row in tab.iterrows():
+                df = row.to_frame().T
+                equations.append(Equation.hcpEquation1(df))
+                equations.append(Equation.hcpEquation2(df))
+                equations.append(Equation.hcpEquation3(df))
+            # return [Equation.hcpEquation1(tab), Equation.hcpEquation2(tab), Equation.hcpEquation3(tab)]
+            return equations
         else:
             typ = "\'\'".format(self.eqn)
             raise myExceptions.EquationNotImplemented(typ)

@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 import numpy as np
 import math
+import sys
 
 
 def getInterval(tem_room, n, tem_min, tem_max):
     rng = np.linspace(tem_min, tem_max, n)
-    if tem_room > tem_min and tem_room < tem_max:
+    if tem_min < tem_room < tem_max:
         idx = (np.abs(rng - tem_room)).argmin()
         rng[idx] = tem_room
     return rng
@@ -244,13 +245,10 @@ class alpEquation1(Equation):
 
 class hcpEquation1(Equation):
     def __init__(self, tab):
-        tem_cri = tab['tem_cri']
-        a = tab['a_hcp_1']
-        b = tab['b_hcp_1']
-        c = tab['c_hcp_1']
-        d = tab['d_hcp_1']
-        tem_min = tab['tem_min_1']
-        tem_max = tab['tem_max_1']
+        if tab.shape[0] != 1:
+            print(tab)
+            print('Multiple rows found when creating Equation::hcpEquation1()')
+            sys.exit(123)
 
         columns = tab.columns
         if 'fid' in columns:
@@ -258,16 +256,22 @@ class hcpEquation1(Equation):
         else:
             fid = ['']
 
-        a = float(a)
-        b = float(b)
-        c = float(c)
-        d = float(d)
-        tem_min = float(tem_min)
-        tem_max = float(tem_max)
+        a = tab['a_hcp_1'].values[0]
+        b = tab['b_hcp_1'].values[0]
+        c = tab['c_hcp_1'].values[0]
+        d = tab['d_hcp_1'].values[0]
+        tem_min = tab['tem_min_1'].values[0]
+        tem_max = tab['tem_max_1'].values[0]
 
-        self.tem_cri = tem_cri
+        if a != '%':
+            a = float(a)
+            b = float(b)
+            c = float(c)
+            d = float(d)
+            tem_min = float(tem_min)
+            tem_max = float(tem_max)
+
         self.fid = fid
-        #
         self.a = a
         self.b = b
         self.c = c
@@ -288,15 +292,20 @@ class hcpEquation1(Equation):
         d = self.d
 
         val = a
-        val = val + b * math.pow(tem / 100, 1)
-        val = val + c * math.pow(tem / 100, 2)
-        val = val + d * math.pow(tem / 100, 3)
+        val = val + b * math.pow(tem / 100.0, 1)
+        val = val + c * math.pow(tem / 100.0, 2)
+        val = val + d * math.pow(tem / 100.0, 3)
         val = val * 8.314472
         return val
 
 
 class hcpEquation2(Equation):
     def __init__(self, tab):
+        if tab.shape[0] != 1:
+            print(tab)
+            print('Multiple rows found when creating Equation::hcpEquation1()')
+            sys.exit(123)
+
         columns = tab.columns
         if 'fid' in columns:
             fid = tab['fid'].values
@@ -348,6 +357,11 @@ class hcpEquation2(Equation):
 
 class hcpEquation3(Equation):
     def __init__(self, tab):
+        if tab.shape[0] != 1:
+            print(tab)
+            print('Multiple rows found when creating Equation::hcpEquation1()')
+            sys.exit(123)
+
         columns = tab.columns
         if 'fid' in columns:
             fid = tab['fid'].values
