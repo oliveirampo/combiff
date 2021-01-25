@@ -308,7 +308,8 @@ class dbsSurfaceTension(DbsRelation):
 
 class dbsIsothermalCompressibility(DbsRelation):
     def getLabel():
-        return r'$\kappa \, [10^{-5} bar^{-1}]$'
+        #return r'$\kappa \, [10^{-5} bar^{-1}]$'
+        return r'$\kappa \, [bar^{-1}]$'
 
 
 class dbsThermalExpansionCoefficient(DbsRelation):

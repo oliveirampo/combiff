@@ -13,6 +13,7 @@
       "tem": "tem_exm",
       "prop_convert": "1000",
       "eqn": "dns_1",
+      "fid": "fid",
       "col": "@col rec cid a_dns b_dns c_dns n_dns tem_min tem_max fid tem_exm dns_exm rid pid",
       "marker": ".",
       "color": "magenta"
@@ -22,8 +23,8 @@
       "var": "hvp_exm",
       "tem": "tem_exm",
       "eqn": "hvp_1",
-      "col": "@col rec cid a_hvp tem_cri n_hvp tem_min tem_max fid tem_exm hvp_exm rid pid",
       "fid": "fid",
+      "col": "@col rec cid a_hvp tem_cri n_hvp tem_min tem_max fid tem_exm hvp_exm rid pid",
       "marker": ".",
       "color": "magenta"
     },
@@ -31,23 +32,34 @@
       "rel": "hvb",
       "var": "hvp",
       "tem": "tem_blp",
-      "col": "@col rec cid tem_blp hvp fid rid pid",
       "fid": "fid",
+      "col": "@col rec cid tem_blp hvp fid rid pid",
       "marker": ".",
       "color": "magenta"
     },
     "blp": {
       "rel": "hvb",
       "var": "tem_blp",
-      "col": "@col rec cid tem_blp hvp fid rid pid",
       "fid": "fid",
+      "col": "@col rec cid tem_blp hvp fid rid pid",
       "marker": ".",
       "color": "magenta"
     },
     "tem_cri": {
       "rel": "hvp",
       "var": "tem_cri",
+      "fid": "fid",
       "col": "@col rec cid a_hvp tem_cri n_hvp tem_min tem_max fid tem_exm hvp_exm rid pid",
+      "marker": ".",
+      "color": "magenta"
+    },
+    "gam": {
+      "rel": "gam",
+      "var": "gam_exm",
+      "tem": "tem_exm",
+      "fid": "fid",
+      "eqn": "gam_1",
+      "col": "@col rec cid a_gam b_gam n_gam tem_min tem_max fid tem_exm gam_exm rid pid",
       "marker": ".",
       "color": "magenta"
     },
@@ -55,6 +67,8 @@
       "rel": "kap",
       "var": "kap",
       "tem": "tem",
+      "fid": "fid",
+      "tem_convert": "273.15",
       "col": "@col rec cid tem kap fid rid pid",
       "marker": ".",
       "color": "magenta"
@@ -63,15 +77,9 @@
       "rel": "alp",
       "var": "alp_exm",
       "tem": "tem_exm",
+      "fid": "fid",
+      "eqn": "alp_1",
       "col": "@col rec cid a_alp b_alp n_alp tem_min tem_max fid tem_exm alp_exm rid pid",
-      "marker": ".",
-      "color": "magenta"
-    },
-    "gam": {
-      "rel": "gam",
-      "var": "gam_exm",
-      "tem": "tem_exm",
-      "col": "@col rec cid a_gam b_gam n_gam tem_min tem_max fid tem_exm gam_exm rid pid",
       "marker": ".",
       "color": "magenta"
     }
@@ -116,13 +124,13 @@
     "blp": {
       "rel": "phys",
       "var": "blp",
-      "tem_convert": "273.15",
+      "prop_convert": "273.15",
       "col": "@col rec cid phys mlp mlp_com blp blp_com pre_blp_bis blp_bis tem_dns_ref pre_dns_ref dns_ref dns_com tem_nD pre_nD nD tem_aq_sol aq_sol vp sol pid"
     },
     "mlp": {
       "rel": "phys",
       "var": "mlp",
-      "tem_convert": "273.15",
+      "prop_convert": "273.15",
       "col": "@col rec cid phys mlp mlp_com blp blp_com pre_blp_bis blp_bis tem_dns_ref pre_dns_ref dns_ref dns_com tem_nD pre_nD nD tem_aq_sol aq_sol vp sol pid"
     }
   },
@@ -162,6 +170,61 @@
       "rel": "blp",
       "var": "blp",
       "col": "@col rec cid blp ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "gam": {
+      "rel": "gam",
+      "var": "gam",
+      "tem": "tem",
+      "pre": "pre",
+      "prop_convert": "100.0",
+      "col": "@col rec cid tem pre gam phase ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "kap": {
+      "rel": "kap",
+      "var": "kap",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre kap ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "alp": {
+      "rel": "alp",
+      "var": "alp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre alp phase ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "hcp": {
+      "rel": "hcp",
+      "var": "hcp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre hcp phase ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps",
+      "pre": "pre",
+      "fre": "fre",
+      "col": "@col rec cid tem pre fre eps ref pid",
+      "marker": "^",
+      "color": "red"
+    },
+    "diffus": {
+      "rel": "self_dif",
+      "var": "self_dif",
+      "pre": "pre",
+      "pre": "pre",
+      "col": "@col rec cid tem pre self_dif phase ref pid",
       "marker": "^",
       "color": "red"
     }
@@ -306,6 +369,15 @@
       "marker": "x",
       "color": "dodgerblue"
     },
+    "hcp": {
+      "rel": "hcp",
+      "var": "hcp",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid hcp pre tem ref_pri ref_sec cod pid",
+      "marker": "x",
+      "color": "dodgerblue"
+    },
     "eps": {
       "rel": "eps",
       "var": "eps",
@@ -407,10 +479,11 @@
       "rel": "self_dif",
       "var": "self_dif",
       "tem": "tem",
-      "tem": "pre",
-      "col": "@col rec cid tem pre dns self_dif dns_self_dif met ref pid",
-      "marker": ".",
-      "color": "magenta"
+      "pre": "pre",
+      "pre_convert": "100.0",
+      "col": "@col rec cid tem pre dns self_dif dns_self_dif met met2 ref pid",
+      "marker": "+",
+      "color": "green"
     }
   },
   "AC18.1": {
@@ -554,42 +627,43 @@
       "rel": "dns",
       "var": "dns",
       "tem": "tem",
-      "prop_convert": "1000",
       "col": "@col rec cid tem dns rid pid",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "blue"
     },
     "gam": {
       "rel": "gam",
       "var": "gam",
       "tem": "tem",
       "col": "@col rec cid tem gam rid pid",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "blue"
     },
     "kap": {
       "rel": "kap",
       "var": "kap",
       "tem": "tem",
+      "prop_convert": "0.0001",
       "col": "@col rec cid tem kap rid pid",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "blue"
     },
     "alp": {
       "rel": "alp",
       "var": "alp",
       "tem": "tem",
+      "prop_convert": "1.0E-3",
       "col": "@col rec cid tem alp rid pid",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "blue"
     },
     "hcp": {
       "rel": "hcp",
       "var": "hcp",
       "tem": "tem",
       "col": "@col rec cid tem hcp rid pid",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "blue"
     }
   },
   "NI18.3": {
@@ -604,18 +678,20 @@
       "rel": "gam",
       "var": "gam",
       "tem": "tem",
+      "prop_convert": "1000",
       "col": "@col rec cid tem gam err phase ref fil pfn",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "navy"
     },
     "kap": {
       "rel": "kap",
       "var": "kap",
       "tem": "tem",
       "pre": "pre",
+      "prop_convert": "100.0",
       "col": "@col rec cid tem pre kap err phase ref fil pfn",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "navy"
     },
     "alp": {
       "rel": "alp",
@@ -623,8 +699,8 @@
       "tem": "tem",
       "pre": "pre",
       "col": "@col rec cid tem pre alp err phase ref fil pfn",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "navy"
     },
     "hcp": {
       "rel": "hcp",
@@ -632,8 +708,17 @@
       "tem": "tem",
       "pre": "pre",
       "col": "@col rec cid tem pre hcp err phase ref fil pfn",
-      "marker": ".",
-      "color": "magenta"
+      "marker": "^",
+      "color": "navy"
+    },
+    "diffus": {
+      "rel": "self_dif",
+      "var": "self_dif",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid tem pre self_dif err phase ref fil pfn",
+      "marker": "^",
+      "color": "navy"
     }
   },
   "GH16.1": {
@@ -663,6 +748,7 @@
     "hcp": {
       "rel": "hcp",
       "var": "hcp",
+      "eqn": "hcp_123",
       "col": "@col rec cid tem_cri tem_min_1 tem_max_1 a_hcp_1 b_hcp_1 c_hcp_1 d_hcp_1 err_hcp_1 tem_min_2 tem_max_2 a_hcp_2 b_hcp_2 c_hcp_2 d_hcp_2 err_hcp_2 tem_min_3 tem_max_3 a_hcp_3 b_hcp_3 c_hcp_3 d_hcp_3 e_hcp_3 f_hcp_3 err_hcp_3 pid",
       "marker": ".",
       "color": "magenta"

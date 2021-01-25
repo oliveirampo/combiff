@@ -6,9 +6,9 @@ import sys
 import os
 import re
 
-
 from molecule import moleculeEncoder
 from molecule import moleculeDecoder
+from molecule import Molecule
 import myExceptions
 import utils
 import IO
@@ -19,12 +19,13 @@ def run(dbsConfig):
     if nArgs < 4:
         raise myExceptions.ArgError(4, nArgs)
 
-    flsFile = sys.argv[2]
-    fieFile = sys.argv[3]
-    cidSmilesFile = sys.argv[4]
+    # flsFile = sys.argv[2]
+    fieFile = sys.argv[2]
+    cidSmilesFile = sys.argv[3]
 
     isomers = IO.readFieFile(fieFile)
-    molecules = IO.readFlsFile(flsFile, isomers)
+    # molecules = IO.readFlsFile(flsFile, isomers)
+    molecules = getMolecules(isomers)
 
     print('Canonicalizing SMILES')
     canonicalizeSmiles(molecules)
@@ -44,6 +45,20 @@ def run(dbsConfig):
         matchMol(cidSmiles, molecules, data, molDataFile)
     else:
         downloadMol(molecules, data, molDataFile)
+
+
+def getMolecules(isomers):
+    molecules = []
+    for idx, row in isomers.iterrows():
+        smiles = row['smiles']
+        form = row['frm']
+        nam = row['nam']
+
+        mol = Molecule(smiles, '', nam, '', 0, [], 0, '')
+        mol.form = form
+        molecules.append(mol)
+
+    return molecules
 
 
 def canonicalizeSmiles(molecules):
@@ -82,11 +97,16 @@ def matchMol(cidSmiles, molecules, data, molDataFile):
                 sys.exit(1)
 
             mol_pcp = mol_pcp[0]
+            if mol_pcp.cid is None:
+                continue
+
             getPcpData(mol_pcp, smiles, mol, data, molDataFile)
 
             count += 1
             if count % 5 == 0:
                 time.sleep(1)
+
+        # sys.exit(123)
 
 
 def downloadMol(molecules, data, molDataFile):
@@ -97,7 +117,7 @@ def downloadMol(molecules, data, molDataFile):
         code = mol.enu_code
         smiles = mol.smiles
 
-        # canonicalize smiles wiht RDKit
+        # canonicalize smiles with RDKit
         smiles = utils.getCanonicalSmiles(smiles)
         mol.smiles = smiles
 
@@ -115,6 +135,9 @@ def downloadMol(molecules, data, molDataFile):
             sys.exit(1)
 
         mol_pcp = mol_pcp[0]
+        if mol_pcp.cid is None:
+            continue
+
         getPcpData(mol_pcp, smiles, mol, data, molDataFile)
 
         count += 1
@@ -124,27 +147,50 @@ def downloadMol(molecules, data, molDataFile):
 
 def getPcpData(mol_pcp, smiles, mol, data, molDataFile):
     name = mol_pcp.iupac_name
-    if not name:
-        print('No name for: {} {}'.format(mol_pcp, smiles))
-        sys.exit(1)
 
-    compare(mol, mol_pcp)
+    if not name:
+        name = getFirstSynonym(mol_pcp)
+
+    match = compare(mol, mol_pcp)
+    if not match:
+        return
     add_other_names(mol, mol_pcp)
 
     data[smiles] = mol
     # save data to json file
     with open(molDataFile, 'w') as out:
         json.dump(data, out, cls=moleculeEncoder, indent=2)
+    # sys.exit(123)
+
+
+def getFirstSynonym(mol_pcp):
+    name = mol_pcp.synonyms
+    if len(name) != 0:
+        name = name[0]
+        name = name.lower()
+    else:
+        name = 'TODO'
+    return name
 
 
 def compare(mol, mol_pcp):
     cid_pcp = mol_pcp.cid
     inchi_pcp = mol_pcp.inchikey
+
     name_pcp = mol_pcp.iupac_name
+    if not name_pcp:
+        name_pcp = getFirstSynonym(mol_pcp)
+
     form_pcp = mol_pcp.molecular_formula
 
-    match_smiles(mol.smiles, mol_pcp.canonical_smiles)
-    match_formula(mol.form, form_pcp)
+    # print(mol_pcp.cid)
+    smiles_match = match_smiles(mol.smiles, mol_pcp.canonical_smiles)
+    if not smiles_match:
+        return False
+
+    formula_match = match_formula(mol.form, form_pcp)
+    if not formula_match:
+        return False
 
     mol.cid_pcp = cid_pcp
     mol.inchi_pcp = inchi_pcp
@@ -154,7 +200,8 @@ def compare(mol, mol_pcp):
     cas = get_cas_pcp(cid_pcp)
     mol.cas = cas
 
-    print('\t{} {}'.format(mol.name_pcp, mol.cas))
+    print('\t{} {} {}'.format(mol.name_pcp, mol.cas, mol_pcp.cid))
+    return True
 
 
 def match_smiles(reference, smiles):
@@ -162,7 +209,10 @@ def match_smiles(reference, smiles):
         smiles = utils.getCanonicalSmiles(smiles)
         if reference != smiles:
             print('Smiles do not match: {} != {}'.format(reference, smiles))
-            sys.exit(123)
+            # sys.exit(123)
+            return False
+
+    return True
 
 
 def match_formula(reference, formula):
@@ -190,12 +240,16 @@ def match_formula(reference, formula):
     s2 = sorted(s2)
 
     if len(s1) != len(s2):
-        sys.exit('\tFormulas do not match: {} {}'.format(reference, formula))
+        print('\tFormulas do not match: {} {}'.format(reference, formula))
+        return False
 
     for i in range(len(s1)):
         if s1[i] != s2[i]:
             print(s1[i], s2[i])
-            sys.exit('\tFormulas do not match: {} {}'.format(reference, formula))
+            print('\tFormulas do not match: {} {}'.format(reference, formula))
+            return False
+
+    return True
 
 
 def get_cas_pcp(cid):

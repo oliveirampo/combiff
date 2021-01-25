@@ -5,6 +5,8 @@ import sys
 
 
 def getInterval(tem_room, n, tem_min, tem_max):
+    #print(tem_room, tem_min, tem_max)
+    #print(type(tem_room), type(tem_min), type(tem_max))
     rng = np.linspace(tem_min, tem_max, n)
     if tem_min < tem_room < tem_max:
         idx = (np.abs(rng - tem_room)).argmin()
@@ -163,7 +165,7 @@ class pvpEquation1(Equation):
         a = self.a
         b = self.b
         c = self.c
-        logP = a - ( b / (tem + c) )
+        logP = a - (b / (tem + c) )
 
         # Bar
         P = math.pow(10, logP) * 1.01325/760.0
@@ -263,7 +265,7 @@ class hcpEquation1(Equation):
         tem_min = tab['tem_min_1'].values[0]
         tem_max = tab['tem_max_1'].values[0]
 
-        if a != '%':
+        if a != '%' and a != '-':
             a = float(a)
             b = float(b)
             c = float(c)
@@ -280,7 +282,9 @@ class hcpEquation1(Equation):
         self.tem_max = tem_max
 
     def getData(self, tem_room, nPoints, tem_convert):
-        if self.a == '%':
+        #print('Equation 1')
+        #print(self.a, self.b, self.tem_min, self.tem_max)
+        if self.a == '%' or self.a == '-':
             return [], [], []
         X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
         return X, Y, fid
@@ -336,6 +340,7 @@ class hcpEquation2(Equation):
         self.fid = fid
 
     def getData(self, tem_room, nPoints, tem_convert):
+        #print('Equation 2')
         if self.a == '%':
             return [], [], []
         X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
@@ -401,6 +406,7 @@ class hcpEquation3(Equation):
         self.fid = fid
 
     def getData(self, tem_room, nPoints, tem_convert):
+        #print('Equation 3')
         if self.a == '%':
             return [], [], []
         X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
