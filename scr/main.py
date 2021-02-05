@@ -32,20 +32,16 @@ def main():
         elif job == '-writeIdentifier':
             writeIdentifiers.run()
 
-        '''
-        Search for reference data in DBS tables.
-        The DBS tables are saved in tmp/ directory.
-        The output matched data is saved in data/ directory. 
-        '''
+        # Search for reference data in DBS tables.
+        # The DBS tables are saved in tmp/ directory.
+        # The output matched data is saved in data/ directory.
         elif job == '-searchProp':
             dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             dbsSearch.run(dbsConfig)
 
-        '''
-        Plot all available data for each property and each molecule
-        so that the user can select the data points that will be used as reference data.
-        '''
+        # Plot all available data for each property and each molecule
+        # so that the user can select the data points that will be used as reference data.
         elif job == '-selectData':
             dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)

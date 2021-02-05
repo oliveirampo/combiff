@@ -1,3 +1,4 @@
+from pubchempy import BadRequestError
 from collections import OrderedDict
 import pubchempy as pcp
 import time
@@ -127,7 +128,12 @@ def downloadMol(molecules, data, molDataFile):
 
         print(mol)
 
-        mol_pcp = pcp.get_compounds(smiles, 'smiles')
+        try:
+            mol_pcp = pcp.get_compounds(smiles, 'smiles')
+        except BadRequestError:
+            print('\n\tBadRequesteError for SMILES = {}\n'.format(smiles))
+            continue
+
         if len(mol_pcp) == 0:
             continue
         if len(mol_pcp) != 1:
