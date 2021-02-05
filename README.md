@@ -1,5 +1,6 @@
-# CombiFF script - Collect reference data for force-field optimization.
+# DBS script - Collect reference data for force-field optimization.
 
+* DBS stands for DataBase System. It is data based of experimental data maitained by tge [CSMS](https://csms.ethz.ch/) group.
 * Search for identifier (name, InChIKey, CAS registry number) in [PubChem](https://pubchem.ncbi.nlm.nih.gov/) given smiles strings.
 * Search for themodynamic, dielectric, transport and solvation data of organic molecules in an in-house database of experimental data of organic compounds.
 * For every molecule, plot all available data and let the user select the reference data points.
