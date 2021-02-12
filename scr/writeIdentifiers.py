@@ -1,3 +1,10 @@
+"""Writes identifiers to txt file.
+
+Methods:
+    run()
+    selectMolecules(isomer, enuData)
+"""
+
 import json
 import sys
 import os
@@ -10,6 +17,8 @@ import IO
 
 
 def run():
+    """Writes identifiers to txt file."""
+
     nArgs = len(sys.argv)
     if nArgs != 3 and nArgs != 4:
         raise myExceptions.ArgError('3 or 4', nArgs)
@@ -59,6 +68,14 @@ def run():
 
 
 def selectMolecules(isomer, enuData):
+    """Returns data of only molecules specified in isomer DataFrame.
+
+    :param isomer: (pandas DataFrame) List of constitutional isomers together with molecular formula and SMILES.
+    :param enuData: (dict) Molecule data (identifiers).
+    :return:
+        data: (dict) Selected molecule data (identifiers).
+    """
+
     data = {}
     for idx, row in isomer.iterrows():
         smiles = row['smiles']

@@ -1,13 +1,16 @@
 import pandas as pd
 import json
-
+import os
 
 from molecule import Molecule
 import myDataStructure
+import myExceptions
 import utils
 
 
 def readFieFile(fileName):
+    if not os.path.exists(fileName):
+        raise myExceptions.NoFile(fileName)
     df = pd.read_csv(fileName, sep='\s+', comment='#', names=['nam', 'frm', 'smiles'])
     return df
 

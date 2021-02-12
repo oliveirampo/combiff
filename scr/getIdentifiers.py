@@ -1,3 +1,13 @@
+"""Gets identifiers (name, cas, standard inchikey) from pubchem given SMILES strings.
+    - If a file with CID and smiles from pubchem is given,
+    then the CID is used directly to retrieve the molecule from pubchem.
+    - If an empty file is given,
+    then the smiles is used to search for the molecule in the database.
+In both cases RDKit is used to canonicalize the smiles strings.
+
+Methods:
+"""
+
 from pubchempy import BadRequestError
 from collections import OrderedDict
 import pubchempy as pcp
@@ -16,6 +26,23 @@ import IO
 
 
 def run(dbsConfig):
+    """Gets identifiers (name, cas, standard inchikey) from pubchem given SMILES strings.
+    1. Read input files.
+        - fieFile (list of constitutional isomers along with molecular formula ans SMILES strings.
+        - empty file or file that maps CID from PubChem to SMILES strings.
+    2. Canonicalize SMILES using RDKit.
+    3. Match SMILES from fieFile to SMILES from PubChem and get CID from PubChem.
+        - If a file with CID and smiles from pubchem is given,
+        then the CID is used directly to retrieve the molecule from pubchem.
+        - If an empty file is given,
+        then the smiles is used to search for the molecule in the database.
+    4. Use CID from PubChem to download molecule and extract identifiers.
+        - Check if formula match.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    :return:
+    """
+
     nArgs = len(sys.argv)
     if nArgs < 4:
         raise myExceptions.ArgError(4, nArgs)
@@ -49,6 +76,13 @@ def run(dbsConfig):
 
 
 def getMolecules(isomers):
+    """Returns list of molecules created from table with SMILES.
+
+    :param isomers: (pandas DataFrame) List of constitutional isomers together with molecular formula and SMILES.
+    :return:
+        molecules: (list) List of Molecules.
+    """
+
     molecules = []
     for idx, row in isomers.iterrows():
         smiles = row['smiles']
@@ -63,16 +97,36 @@ def getMolecules(isomers):
 
 
 def canonicalizeSmiles(molecules):
+    """ Canonicalize SMILES strings from list of molecules.
+
+    :param molecules: (list) List of molecules.
+    """
+
     for mol in molecules:
         smiles = mol.smiles
         smiles = utils.getCanonicalSmiles(smiles)
         mol.smiles = smiles
 
 
-# get idenfier from already downloaded file
-#  there is higher chance of matching identifiers because both smiles are canonicalized with RDKit
 def matchMol(cidSmiles, molecules, data, molDataFile):
-    # wait 1 sec after searching for 5 molecules
+    """Extracts identifier of molecules.
+    1. Match smiles from fieFile to smiles from file that maps CID from PubChem to SMILES strings.
+    2. Use the CID to download molecule from PubChem using the pubchempy library.
+    3. Extract identifiers.
+    4. Check consistency between formulas.
+
+    :param cidSmiles: (pandas DataFrame) Table that maps CID from PubChem to SMILES strings.
+    :param molecules: (list) Molecules.
+    :param data: (OrderedDict) Dictionary of downloaded data. Additional data is appended to it.
+    :param molDataFile: Output file to it data will be written.
+    :return:
+
+    There is higher chance of matching identifiers then using the downloadMol() method
+    because the smiles to be matched are canonicalized with RDKit first.
+
+    Wait 1 sec after searching for 5 molecules
+    """
+
     count = 0
     for mol in molecules:
         code = mol.enu_code
@@ -107,11 +161,20 @@ def matchMol(cidSmiles, molecules, data, molDataFile):
             if count % 5 == 0:
                 time.sleep(1)
 
-        # sys.exit(123)
-
 
 def downloadMol(molecules, data, molDataFile):
-    # wait 1 sec after searching for 5 molecules
+    """Extracts identifier of molecules.
+    1. Use smiles from fieFile to search for molecules in PubChem using pubchempy library.
+    2. Extract identifiers.
+    3. Check consistency between formulas.
+
+    :param molecules: (list) Molecules.
+    :param data: (OrderedDict) Dictionary of downloaded data. Additional data is appended to it.
+    :param molDataFile: Output file to it data will be written.
+
+    Wait 1 sec after searching for 5 molecules
+    """
+
     count = 0
 
     for mol in molecules:
@@ -152,10 +215,21 @@ def downloadMol(molecules, data, molDataFile):
 
 
 def getPcpData(mol_pcp, smiles, mol, data, molDataFile):
+    """Extracts information from pubchempy.Compound and save it to json file.
+
+    :param mol_pcp: (pubchempy.Compound) Molecule from PubChem.
+    :param smiles: (str) SMILES string.
+    :param mol: (molecule.Molecule) Molecule from fieFile.
+    :param data: (OrderedDict) Dictionary of downloaded data. Additional data is appended to it.
+    :param molDataFile: Output file to it data will be written.
+    :return:
+    """
+
     name = mol_pcp.iupac_name
 
     if not name:
         name = getFirstSynonym(mol_pcp)
+    add_other_names(mol, name)
 
     match = compare(mol, mol_pcp)
     if not match:
@@ -166,10 +240,16 @@ def getPcpData(mol_pcp, smiles, mol, data, molDataFile):
     # save data to json file
     with open(molDataFile, 'w') as out:
         json.dump(data, out, cls=moleculeEncoder, indent=2)
-    # sys.exit(123)
 
 
 def getFirstSynonym(mol_pcp):
+    """Returns first synonym available.
+
+    :param mol_pcp: (pubchempy.Compound) Molecule from PubChem.
+    :return:
+        name: (str) Synonym.
+    """
+
     name = mol_pcp.synonyms
     if len(name) != 0:
         name = name[0]
@@ -180,6 +260,13 @@ def getFirstSynonym(mol_pcp):
 
 
 def compare(mol, mol_pcp):
+    """Compares formulas of two molecules.
+
+    :param mol: (molecule.Molecule) Molecule from fieFile.
+    :param mol_pcp: (pubchempy.Compound) Molecule from PubChem.
+    :return:
+    """
+
     cid_pcp = mol_pcp.cid
     inchi_pcp = mol_pcp.inchikey
 
@@ -211,6 +298,13 @@ def compare(mol, mol_pcp):
 
 
 def match_smiles(reference, smiles):
+    """Checks if two SMILES strings match.
+
+    :param reference: (str) Reference SMILES string.
+    :param smiles: (str) Other SMILES string.
+    :return:
+    """
+
     if reference != smiles:
         smiles = utils.getCanonicalSmiles(smiles)
         if reference != smiles:
@@ -222,6 +316,13 @@ def match_smiles(reference, smiles):
 
 
 def match_formula(reference, formula):
+    """Checks if two molecular formulas match.
+
+    :param reference: (str) Reference formula.
+    :param formula: (str) Other formula.
+    :return: (boolean)
+    """
+
     s1 = re.findall(r'([A-Z][a-z]*)(\d*)', reference)
 
     # for alcohol with formula Cx{OH}yHz
@@ -259,6 +360,13 @@ def match_formula(reference, formula):
 
 
 def get_cas_pcp(cid):
+    """Extracts CAS fom synonyms of pubchempy.Compound or empty string.
+
+    :param cid: (int) CID from PubChem.
+    :return:
+        cas: (str) CAS Registry Number.
+    """
+
     results = pcp.get_synonyms(cid, 'cid')
     for result in results:
         for syn in result.get('Synonym', []):
@@ -270,6 +378,12 @@ def get_cas_pcp(cid):
 
 
 def add_other_names(mol, mol_pcp):
+    """Adds other names available in PubChem to molecule.
+
+    :param mol: (molecule.Molecule) Molecule from fieFile.
+    :param mol_pcp: (pubchempy.Compound) Molecule from PubChem.
+    """
+
     names = ['allowed_name', 'cas_like_style_name', 'systematic_name', 'traditional_name']
     for n in names:
         try:
