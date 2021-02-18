@@ -1,3 +1,19 @@
+"""Module used to plot all data available and select data points manually.
+
+Methods:
+    manualSelection(dbsConfig)
+    getDbsData(prop, larsCode, dbsEntries)
+    plotSelectedData(propVar, selectedData, defaultPressure)
+    getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles)
+    addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_values, src_values)
+    getFirstValueOfTransitionPoint(data)
+    getHighestTransitionPoint(var, data)
+    convertArrays(prop, x_values, y_values, pre_values, src_values, fid_values, met_values)
+    getSelectedDataForProperty(dbsConfig)
+    getSelectedData(dbsConfig)
+    addProperty(prop, dfTmp, selectedData)
+"""
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -15,6 +31,13 @@ import IO
 
 
 def manualSelection(dbsConfig):
+    """
+    Plots properties for each molecule as function of temperature,
+    and writes manually selected data points to file.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    """
+
     nArgs = len(sys.argv)
     if nArgs != 3:
         raise myExceptions.ArgError(nArgs, 3)
@@ -126,7 +149,7 @@ def manualSelection(dbsConfig):
 
                         for x in X: pre_values.append(defaultPressure)
 
-            x_values, y_values, pre_values, src_values, fid_values, met_values = checkArrays(prop, x_values, y_values,
+            x_values, y_values, pre_values, src_values, fid_values, met_values = convertArrays(prop, x_values, y_values,
                                                                                             pre_values, src_values,
                                                                                             fid_values, met_values)
 
@@ -150,13 +173,32 @@ def manualSelection(dbsConfig):
 
 
 def getDbsData(prop, larsCode, dbsEntries):
+    """Returns dbs relation objects and factory object that creates equation objects.
+
+    :param prop: (str) Property code.
+    :param larsCode: (str) LARS code.
+    :param dbsEntries: (dict of dbsEntry objects) Dictionary that maps LARS code to dbsEntry objects.
+    :return:
+        dbsRelation: (dbsRelation object)
+        dbsFactory: (abstractFactoryRelation object) Object that creates relations and equations.
+    """
+
     dbsEntry = dbsEntries[larsCode]
     dbsFactory = dbsEntry.getFactory(prop)
     dbsRelation = dbsFactory.createRelation()
+
     return dbsRelation, dbsFactory
 
 
 def plotSelectedData(propVar, selectedData, defaultPressure):
+    """Plots selected data.
+
+    :param propVar: (str) Property code.
+    :param selectedData: (selectedData object) Object that contains data selected.
+    :param defaultPressure: (float) Vapor pressure.
+    :return:
+    """
+
     prop = selectedData.getProperty(propVar)
     pre = np.asarray(prop.pre, dtype=np.float32)
     tem = np.asarray(prop.tem, dtype=np.float32)
@@ -169,6 +211,20 @@ def plotSelectedData(propVar, selectedData, defaultPressure):
 
 
 def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod, tables, smiles):
+    """Returns transition point.
+
+    :param propName: (str) Property code: meltingPoint, boilingPoint or criticalTemperature.
+    :param defaultPressure: (float) Default pressure.
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    :param dbsEntries: (dict of dbsEntry objects) Dictionary that maps LARS code to dbsEntry objects.
+    :param propCod: (dict) Map from property code to LARS code available for this property.
+    :param tables: (dict) Dictionary of pandas DataFrame that maps property codes to data.
+    :param smiles: (str) SMILES string.
+    :return:
+        prop: (str) Property code.
+        data: (pandas DataFrame) Table with two columns - temperature and larsCode.
+    """
+
     prop = dbsConfig.getVariable(propName)
 
     data = []
@@ -192,6 +248,19 @@ def getTransitionPoint(propName, defaultPressure, dbsConfig, dbsEntries, propCod
 
 
 def addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_values, src_values):
+    """
+
+    :param propCod: (dict) Map from property code to LARS code available for this property.
+    :param blp: (pandas DataFrame) Table with two columns [boiling point | LARS code].
+    :param tables: (dict) Dictionary of pandas DataFrame that maps property codes to data.
+    :param smiles: (str) SMILES string.
+    :param dbsEntries: (dict of dbsEntry objects) Dictionary that maps LARS code to dbsEntry objects.
+    :param x_values: (numpy.ndarray) Array with x values.
+    :param pre_values: (numpy.ndarray) Vapor pressure values.
+    :param src_values: (numpy.ndarray) Array with LARS code for each pressure value.
+    :return:
+    """
+
     prop = 'pvp'
     if prop not in propCod:
         return
@@ -227,7 +296,13 @@ def addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_val
 
 
 def getFirstValueOfTransitionPoint(data):
-    # plot first value
+    """Returns first value of a given transition point.
+
+    :param data: (pandas DataFrame) Table with temperature of transition point and LARS code.
+    :return:
+        (array) Array with first temperature and LARS code pair available.
+    """
+
     if data.shape[0] != 0:
         row = data.iloc[0]
         tem = row['tem']
@@ -237,12 +312,37 @@ def getFirstValueOfTransitionPoint(data):
 
 
 def getHighestTransitionPoint(var, data):
+    """Returns maximum value in a list for a given transition point.
+
+    :param var: (str) Column name in 'data' argument.
+    :param data: (pandas DataFrame) Table with temperature of transition point and LARS code.
+    :return:
+    """
+
     maxVal = data[var].max()
     maxVal = float(maxVal)
     return maxVal
 
 
-def checkArrays(prop, x_values, y_values, pre_values, src_values, fid_values, met_values):
+def convertArrays(prop, x_values, y_values, pre_values, src_values, fid_values, met_values):
+    """Converts lists to numpy arrays.
+
+    :param prop: (str) Property code.
+    :param x_values: (list) X values.
+    :param y_values: (list) Y values.
+    :param pre_values: (list) Pressure value.
+    :param src_values: (list) List of LARS codes.
+    :param fid_values: (list) List of annotations if provided by the source.
+    :param met_values: (list) List of methods if provided by the source.
+    :return:
+        x_values: (numpy array)
+        y_values: (numpy array)
+        pre_values: (numpy array)
+        src_values: (numpy array)
+        fid_values: (numpy array)
+        met_values: (numpy array)
+    """
+
     x_values = np.asarray(x_values)
     y_values = np.asarray(y_values)
     pre_values = np.asarray(pre_values)
@@ -260,13 +360,17 @@ def checkArrays(prop, x_values, y_values, pre_values, src_values, fid_values, me
     return x_values, y_values, pre_values, src_values, fid_values, met_values
 
 
-# get selected data from old format file
-# and add to already available output file
 def getSelectedDataForProperty(dbsConfig):
-    fieFile = sys.argv[3]
+    """Gets selected data from old format file
+    and adds to already available output file.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    """
+
+    fieFile = sys.argv[2]
     isomers = IO.readFieFile(fieFile)
 
-    oldMolListFileName = sys.argv[4]    # 01_mol.lst
+    oldMolListFileName = sys.argv[3]    # 01_mol.lst
 
     molList = pd.read_csv(oldMolListFileName, sep='\s+',
               names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles', 'old_cod', 'x', 'y', 'z'],
@@ -326,13 +430,17 @@ def getSelectedDataForProperty(dbsConfig):
     IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
 
 
-# get selected data from old format file
-# for dns and hvp
 def getSelectedData(dbsConfig):
-    fieFile = sys.argv[3]
+    """Gets selected data from old format file for dns and hvp properties.
+
+    :param dbsConfig:  (dbsConfiguration object) DBS configuration object.
+    :return:
+    """
+
+    fieFile = sys.argv[2]
     isomers = IO.readFieFile(fieFile)
 
-    oldMolListFileName = sys.argv[4]    # 01_mol.lst
+    oldMolListFileName = sys.argv[3]    # 01_mol.lst
     oldSelectedDataFileName = 'old_files/mol.src'
 
     molList = pd.read_csv(oldMolListFileName, sep='\s+',
@@ -417,6 +525,14 @@ def getSelectedData(dbsConfig):
 
 
 def addProperty(prop, dfTmp, selectedData):
+    """Adds property to selected data object.
+
+    :param prop: (str) Property code.
+    :param dfTmp: (pandas DataFrame) Table with data.
+    :param selectedData: selectedData: (selectedData object) Object that contains data selected.
+    :return:
+    """
+
     val = dfTmp[prop].unique()
     src = dfTmp['{}_src'.format(prop)].unique()
 

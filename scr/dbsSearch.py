@@ -194,7 +194,6 @@ def run(dbsConfig):
     and save data to data/ directory.
 
     :param dbsConfig: (dbsConfiguration object) DBS configuration object.
-    :return:
     """
 
     nArgs = len(sys.argv)

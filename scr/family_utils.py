@@ -1,8 +1,18 @@
+"""Module for handling Family object.
+
+Methods:
+    initFamilies()
+    getFamily(familyCod)
+"""
+
 import sys
 
 import family
 
+
 def initFamilies():
+    """Returns list of predefined families.
+    """
     families = [
         family.Dummy(),
         family.ALK(),
@@ -11,7 +21,14 @@ def initFamilies():
     ]
     return families
 
+
 def getFamily(familyCod):
+    """Returns family given code.
+
+    :param familyCod: (str) Family code.
+    :return: (Family object)
+    """
+
     families = initFamilies()
     idx = -1
     for i in range(len(families)):

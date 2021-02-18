@@ -77,6 +77,7 @@ def main():
         elif job == '-plotData':
             dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            # TODO
             plotData.plotAll(dbsConfig)
 
         else:

@@ -1,3 +1,14 @@
+"""The IO module provides methods for general input and output handling.
+
+Methods:
+    readFieFile(fileName)
+    readFlsFile(fileName, isomers)
+    readFlsFile_helper(pos, data)
+    readCiDSmilesFile(fileName)
+    writeSelectedDataToJson(dbsConfig, selectedData)
+    openSelectedDataFile(dbsConfig)
+"""
+
 import pandas as pd
 import json
 import os
@@ -9,6 +20,13 @@ import utils
 
 
 def readFieFile(fileName):
+    """Reads family isomer enumeration (fie) file.
+
+    :param fileName: (str) File name.
+    :return:
+        df: (pandas DataFrame) Table with ENU code, molecular formula and SMILEs string.
+    """
+
     if not os.path.exists(fileName):
         raise myExceptions.NoFile(fileName)
     df = pd.read_csv(fileName, sep='\s+', comment='#', names=['nam', 'frm', 'smiles'])
@@ -16,6 +34,14 @@ def readFieFile(fileName):
 
 
 def readFlsFile(fileName, isomers):
+    """Reads molecule file (fls file).
+
+    :param fileName: (str) File name.
+    :param isomers: (pandas Dataframe) Table with ENU code, molecular formula and SMILEs string..
+    :return:
+        molecules: (list) List of molecules.
+    """
+
     with open(fileName, 'r') as f:
         lines = f.readlines()
 
@@ -60,6 +86,13 @@ def readFlsFile(fileName, isomers):
 
 
 def readFlsFile_helper(pos, data):
+    """Helper function to read fls file.
+
+    :param pos: (int) Current position in the while-loop.
+    :param data: (list) Rows with data.
+    :return:
+    """
+
     smiles = ''
     name = ''
     code = ''
@@ -93,6 +126,13 @@ def readFlsFile_helper(pos, data):
 
 
 def readCiDSmilesFile(fileName):
+    """Reads file that maps PubChem identifiers (CID) to SMILES string.
+
+    :param fileName: (str) File name.
+    :return:
+        (pandas DataFrame) Table with CIDs and SMILES strings.
+    """
+
     df = pd.read_csv(fileName, sep='\s+', header=None, names=['cid', 'smiles'],
         dtype = {'cid': 'Int64', 'smiles': 'str'})
 
@@ -107,6 +147,12 @@ def readCiDSmilesFile(fileName):
 
 
 def writeSelectedDataToJson(dbsConfig, selectedData):
+    """Writes selected data to json file.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    :param selectedData: (dict of selectedData) Dictionary that maps SMILES to object that contains the selected data
+    """
+
     fileName = dbsConfig.getOutFileName('molJsonFile')
 
     with open(fileName, "w") as outfile:
@@ -114,9 +160,19 @@ def writeSelectedDataToJson(dbsConfig, selectedData):
 
 
 def openSelectedDataFile(dbsConfig):
+    """Loads json file to selectedData object.
+
+    :param dbsConfig:
+    :return:
+        selectedData: (dict of selectedData) Dictionary that maps SMILES to object that contains the selected data
+    """
+
     fileName = dbsConfig.getOutFileName('molJsonFile')
 
     with open(fileName) as jsonFile:
         selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)
 
+    print(selectedData)
+    import sys
+    sys.exit(123)
     return selectedData

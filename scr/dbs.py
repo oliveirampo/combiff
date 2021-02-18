@@ -265,7 +265,7 @@ class createRelationViscosity(abstractFactoryRelation):
         return [Equation.nullEquation(tab)]
 
 
-class dbsEntry():
+class dbsEntry:
     classes = {'cpd': createRelationCompound, 'dns': createRelationDensity, 'hvp': createRelationVaporizationEnthalpy,
                'hvb': createRelationVaporizationEnthalpyAtBoilingPoint,
                'mlp': createRelationMeltingPoint, 'blp': createRelationBoilingPoint,
@@ -283,7 +283,6 @@ class dbsEntry():
         self.larsCode = larsCode
         self.factories = {}
 
-
     def __str__(self):
         s = '\tLARSCODE: {}\n\tRELATIONS:'.format(self.larsCode)
         for rel in self.factories:
@@ -291,15 +290,15 @@ class dbsEntry():
         s = s[:-1]
         return s
 
+    @staticmethod
     def createFactory(larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
                       prop_convert, tem_convert, pre_convert, marker, color):
         try:
-            factory = dbsEntry.classes[prop](larsCode, prop, rel, var, col, pre, tem, eqn, fid, met,
-                    prop_convert, tem_convert, pre_convert, marker, color)
+            factory = dbsEntry.classes[prop](larsCode, prop, rel, var, col, pre, tem, eqn, fid, met, prop_convert,
+                                             tem_convert, pre_convert, marker, color)
         except TypeError as err:
             raise myExceptions.MethodNotImplemented(err.args[0])
         return factory
-
 
     def addFactory(self, factory):
         prop = factory.prop
@@ -309,9 +308,8 @@ class dbsEntry():
             sys.exit(666)
         self.factories[prop] = factory
 
-
     def getFactory(self, rel):
-        if not rel in self.factories:
+        if rel not in self.factories:
             s = 'dbs.json({}) or relation not implemented'.format(self.larsCode)
             raise myExceptions.NoKey(rel, s)
         return self.factories[rel]

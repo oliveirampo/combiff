@@ -7,7 +7,7 @@ import sys
 import selectData
 
 
-class SelectedData():
+class SelectedData:
     def __init__(self, smiles):
         self.smiles = smiles
         self.mlp = ''
@@ -134,7 +134,7 @@ class SelectedData():
         return self.properties[prop]
 
 
-class Property():
+class Property:
     def __init__(self, prop, pre, tem, val, src, fid, met):
         self.prop = prop
         self.pre = pre
