@@ -20,7 +20,7 @@ import numpy as np
 import sys
 import os
 
-from dbsRelation import getLabel
+from dbsRelation import getUnit
 import myDataStructure
 import myExceptions
 import dbsSearch
@@ -65,7 +65,7 @@ def manualSelection(dbsConfig):
 
     for prop in properties:
         print(prop)
-        propLabel = getLabel(prop)
+        propUnit = getUnit(prop)
 
         for idx, row in molList.iterrows():
             smiles = row['smiles']
@@ -153,7 +153,7 @@ def manualSelection(dbsConfig):
                                                                                             pre_values, src_values,
                                                                                             fid_values, met_values)
 
-            plotData.plotDetails(fig, row, propLabel)
+            plotData.plotDetails(fig, row, propUnit)
 
             addVaporPressure(propCod, blp, tables, smiles, dbsEntries, x_values, pre_values, src_values)
 
