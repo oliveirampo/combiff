@@ -1,14 +1,36 @@
 from numpy import ndarray
 import numpy as np
 import json
-import sys
 
 
 import selectData
 
 
 class SelectedData:
+    """Object that contains selected data.
+
+    Attributes:
+        smiles: () SMILES string.
+        mlp: (str) Melting point.
+        mlp_src: (str) Source of melting point.
+        blp: (str) Boiling point.
+        blp_src: (str) Source of boiling point.
+        tem_cri: (str) Critical temperature/
+        tem_cri_src: (str) Source of critical temperature.
+        eps: (str) Permittivity.
+        eps_src: (str) Source of permittivity.
+        properties: (dict) Dictionary of properties.
+
+    Functions:
+        toDict()
+    """
+
     def __init__(self, smiles):
+        """Constructs all the necessary attributes for this object.
+
+        :param smiles: (str) SMILES string.
+        """
+
         self.smiles = smiles
         self.mlp = ''
         self.mlp_src = ''
@@ -19,7 +41,6 @@ class SelectedData:
         self.eps = ''
         self.eps_src = ''
         self.properties = {}
-
 
     def __str__(self):
         s = '{} {} {} {} {} {} {}'\
@@ -34,25 +55,28 @@ class SelectedData:
 
         return s
 
-
     def toDict(self):
-        data = {}
-        data ['__type__'] = 'SelectedData'
-        data['smiles'] = self.smiles
-        data['mlp'] = self.mlp
-        data['mlp_src'] = self.mlp_src
-        data['blp'] = self.blp
-        data['blp_src'] = self.blp_src
-        data['tem_cri'] = self.tem_cri
-        data['tem_cri_src'] = self.tem_cri_src
-        data['eps'] = self.eps
-        data['eps_src'] = self.eps_src
-        data['prop'] = self.properties
+        """Returns dictionary with selected data.
+
+        :return: (dict)
+        """
+
+        data = {'__type__': 'SelectedData', 'smiles': self.smiles, 'mlp': self.mlp, 'mlp_src': self.mlp_src,
+                'blp': self.blp, 'blp_src': self.blp_src, 'tem_cri': self.tem_cri, 'tem_cri_src': self.tem_cri_src,
+                'eps': self.eps, 'eps_src': self.eps_src, 'prop': self.properties}
 
         return data
 
+    @staticmethod
+    def getTransitionPoint(data):
+        """Returns first value of transition points provided in table.
 
-    def getTransitionPoint(self, data):
+        :param data: (pandas DataFrame) Table with transition points.
+        :return:
+            tem: (float, str) Temperature.
+            src: (str) Source.
+        """
+
         values = selectData.getFirstValueOfTransitionPoint(data)
         if len(values) == 2:
             tem = values[0]
@@ -60,8 +84,12 @@ class SelectedData:
             return tem, src
         return '', ''
 
-
     def addMeltingPoint(self, data):
+        """Adds melting point to SelectedData object.
+
+        :param data: (pandas DataFrame)
+        """
+
         if self.mlp != '':
             return
 
@@ -69,8 +97,12 @@ class SelectedData:
         self.mlp = tem
         self.mlp_src = src
 
-
     def addBoilingPoint(self, data):
+        """Adds boiling point to SelectedData object.
+
+        :param data: (pandas DataFrame)
+        """
+
         if self.blp != '':
             return
 
@@ -78,8 +110,12 @@ class SelectedData:
         self.blp = tem
         self.blp_src = src
 
-
     def addCriticalTemperature(self, data):
+        """Adds critical temperature to SelectedData object.
+
+        :param data: (pandas DataFrame)
+        """
+
         if self.tem_cri != '':
             return
 
@@ -87,8 +123,12 @@ class SelectedData:
         self.tem_cri = tem
         self.tem_cri_src = src
 
-
     def addPermittivity(self, data):
+        """Adds permittivity to SelectedData object.
+
+        :param data: (pandas DataFrame)
+        """
+
         if self.eps != '':
             return
 
@@ -96,8 +136,20 @@ class SelectedData:
         self.eps = tem
         self.eps_src = src
 
-
     def appendProperty(self, prop, mask, x_values, y_values, pre_values, src_values, fid_values, met_values):
+        """Appends property to list of properties.
+
+        :param prop: (str) Property code.
+        :param mask: (numpy.ndarray of booleans) Array that indicates which coordinates are highlighted.
+        :param x_values: (numpy.ndarray) X values.
+        :param y_values: (numpy.ndarray) Y values.
+        :param pre_values: (numpy.ndarray) List of pressure values.
+        :param src_values: (numpy.ndarray) List of LARS codes.
+        :param fid_values: (numpy.ndarray) List of annotations.
+        :param met_values: (numpy.ndarray) (numpy.ndarray) List of methods.
+        :return:
+        """
+
         pre = pre_values[mask]
         tem = x_values[mask]
         val = y_values[mask]
@@ -111,31 +163,78 @@ class SelectedData:
             else:
                 self.properties[prop] = Property(prop, pre, tem, val, src, fid, met)
 
+    def addProperty(self, prop, property_arg):
+        """Adds property to property list.
 
-    def addProperty(self, prop, property):
-        if property.val.shape[0] != 0:
-            self.properties[prop] = property
+        :param prop: (str) Property code.
+        :param property_arg: (Property)
+        """
 
+        if property_arg.val.shape[0] != 0:
+            self.properties[prop] = property_arg
 
     def hasProperty(self, prop):
+        """Checks if property is in list of properties.
+
+        :param prop: (str) Property code.
+        :return: (boolean)
+        """
+
         return prop in self.properties
 
-
     def hasData(self, prop):
+        """Checks if property has values associated to it.
+
+        :param prop: (str) Property code.
+        :return: (boolean)
+        """
+
         if prop not in self.properties:
             return False
 
-        property = self.properties[prop]
-        val = np.asarray(property.val, dtype=np.float32)
+        property_arg = self.properties[prop]
+        val = np.asarray(property_arg.val, dtype=np.float32)
         return len(val) != 0
 
-
     def getProperty(self, prop):
+        """Returns property.
+
+        :param prop: (str) Property code.
+        :return: (Property)
+        """
+
         return self.properties[prop]
 
 
 class Property:
+    """Property object.
+
+    Attributes:
+        prop: (str) Property code.
+        pre: (float) Pressure.
+        tem: (float) Temperature.
+        val: (float) Value of property.
+        src: (str) LARS code.
+        fid: (str) Annotation.
+        met: (str) Method.
+    Functions:
+        appendData(pre, tem, val, src, fid, met)
+        toDict()
+        toString()
+    """
+
     def __init__(self, prop, pre, tem, val, src, fid, met):
+        """Constructs all the necessary attributes for this object.
+
+        :param prop: (str) Property code.
+        :param pre: (list) Pressure.
+        :param tem: (list) Temperature.
+        :param val: (list) Value of property.
+        :param src: (list) LARS code.
+        :param fid: (list) Annotation.
+        :param met: (list) Method.
+        """
+
         self.prop = prop
         self.pre = pre
         self.tem = tem
@@ -144,8 +243,18 @@ class Property:
         self.fid = fid
         self.met = met
 
-
     def appendData(self, pre, tem, val, src, fid, met):
+        """Appends data to Property object.
+
+        :param pre: (list) Pressure.
+        :param tem: (list) Temperature.
+        :param val: (list) Value associated to property.
+        :param src: (list) LARS code.
+        :param fid: (list) Annotation
+        :param met: (list) Method.
+        :return:
+        """
+
         for i in range(len(val)):
             self.pre.append(pre[i])
             self.tem.append(tem[i])
@@ -155,24 +264,36 @@ class Property:
             self.met.append(met[i])
 
     def toDict(self):
-        data = {}
-        data['__type__'] = 'Property'
-        data['prop'] = self.prop
-        data['pre'] = self.pre
-        data['tem'] = self.tem
-        data['val'] = self.val
-        data['src'] = self.src
-        data['fid'] = self.fid
-        data['met'] = self.met
+        """Converts Property object to dictionary.
+        This method is used to make this Class serializable.
+
+        :return:
+            data: (dict)
+        """
+
+        data = {'__type__': 'Property', 'prop': self.prop, 'pre': self.pre, 'tem': self.tem, 'val': self.val,
+                'src': self.src, 'fid': self.fid, 'met': self.met}
         return data
 
     def toString(self):
+        """Converts Property to string."""
+
         s = '{}\n{}\n{}\n{}\n{}'.format(self.prop, self.pre, self.tem, self.val, self.src)
         return s
 
 
 class SelectedDataEncoder(json.JSONEncoder):
+    """JSON <http://json.org> encoder for SelectedData object.
+    Returns a serializable object.
+
+    Functions:
+        def default(obj)
+    """
+
     def default(self, obj):
+        """Returns a serializable object for ``o``, or calls the base implementation
+        (to raise a ``TypeError``)."""
+
         if isinstance(obj, SelectedData):
 
             dictionary = obj.toDict()
@@ -190,6 +311,13 @@ class SelectedDataEncoder(json.JSONEncoder):
 
 
 def selectedDataDecoder(obj):
+    """Method to decode a SelectedData object.
+
+    :param obj:
+    :return:
+        mol: (SelectedData)
+    """
+
     if '__type__' in obj and obj['__type__'] == 'SelectedData':
         smiles = obj['smiles']
         data = SelectedData(smiles)
@@ -225,6 +353,13 @@ def selectedDataDecoder(obj):
 
 
 def propertyDecoder(obj):
+    """Method to decode a Property object.
+
+    :param obj:
+    :return:
+        mol: (Property)
+    """
+
     if '__type__' in obj and obj['__type__'] == 'Property':
         prop = obj['prop']
         pre = obj['pre']
@@ -234,8 +369,8 @@ def propertyDecoder(obj):
         fid = obj['fid']
         met = obj['met']
 
-        property = Property(prop, pre, tem, val, src, fid, met)
-        return property
+        property_arg = Property(prop, pre, tem, val, src, fid, met)
+        return property_arg
 
     else:
         return obj
