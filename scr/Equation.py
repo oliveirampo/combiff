@@ -1,3 +1,20 @@
+"""Module that implements Equation objects.
+
+Classes:
+    Equation(ABC)
+    nullEquation(Equation)
+    dnsEquation1(Equation)
+    hvpEquation1(Equation)
+    pvpEquation1(Equation)
+    gamEquation1(Equation)
+    alpEquation1(Equation)
+    hcpEquation1(Equation)
+    hcpEquation2(Equation)
+    hcpEquation3(Equation)
+Methods:
+    getInterval(tem_room, n, tem_min, tem_max)
+"""
+
 from abc import ABC, abstractmethod
 import numpy as np
 import math
@@ -5,18 +22,34 @@ import sys
 
 
 def getInterval(tem_room, n, tem_min, tem_max):
-    #print(tem_room, tem_min, tem_max)
-    #print(type(tem_room), type(tem_min), type(tem_max))
+    """Returns array with N points in the range of minimum and maximum temperatures.
+
+    :param tem_room: (float) Room temperature.
+    :param n: (int) Number of points.
+    :param tem_min: (float) Minimum temperature.
+    :param tem_max: (float) Maximum temperature
+    :return:
+        rng: (numpy.ndarray) Array of temperature values.
+    """
+
     rng = np.linspace(tem_min, tem_max, n)
     if tem_min < tem_room < tem_max:
         idx = (np.abs(rng - tem_room)).argmin()
         rng[idx] = tem_room
+
     return rng
 
 
 class Equation(ABC):
+    """Base class for equation object.
+
+    """
+
     @abstractmethod
     def __init__(self, tab):
+        self.tem_min = np.nan
+        self.tem_max = np.nan
+        self.fid = []
         pass
 
     @abstractmethod
@@ -24,6 +57,17 @@ class Equation(ABC):
         pass
 
     def getData(self, tem_room, nPoints, tem_convert):
+        """Returns x and y values given table with coefficients of equation.
+
+        :param tem_room: (float) Room temperature.
+        :param nPoints: (int) Number of points to plot.
+        :param tem_convert: (float) Constant to convert unit.
+        :return:
+            X: (numpy.ndarray) Computed x values.
+            Y: (numpy.ndarray) Computed y values
+            fid: (numpy.ndarray) List of annotations.
+        """
+
         tem_min = self.tem_min
         tem_max = self.tem_max
         fid = self.fid
@@ -38,6 +82,11 @@ class Equation(ABC):
         return X, Y, fid
 
     def getDataAt(self, tem):
+        """Compute value of property at given temperature.
+
+        :param tem (float) Temperature.
+        """
+
         tem_min = self.tem_min
         tem_max = self.tem_max
 
@@ -52,8 +101,12 @@ class Equation(ABC):
 
 
 class nullEquation(Equation):
+    """Default class when DBS entry does not provide equation coefficients.
+
+    """
+
     def __init__(self, tab):
-        pass
+        super(Equation, self).__init__(tab)
 
     def compute(self, tem):
         pass
@@ -66,7 +119,16 @@ class nullEquation(Equation):
 
 
 class dnsEquation1(Equation):
+    """Density equation object."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         a = tab['a_dns']
         b = tab['b_dns']
         c = tab['c_dns']
@@ -91,6 +153,12 @@ class dnsEquation1(Equation):
         self.fid = fid
 
     def compute(self, tem):
+        """Returns the value of the density at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         b = self.b
         c = self.c
@@ -100,7 +168,16 @@ class dnsEquation1(Equation):
 
 
 class hvpEquation1(Equation):
+    """Vaporization enthalpy equation object."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         a = tab['a_hvp']
         n = tab['n_hvp']
         tem_cri = tab['tem_cri']
@@ -127,6 +204,12 @@ class hvpEquation1(Equation):
         self.fid = fid
 
     def compute(self, tem):
+        """Returns the value of the vaporization enthalpy at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         n = self.n
         tem_cri = self.tem_cri
@@ -134,7 +217,16 @@ class hvpEquation1(Equation):
 
 
 class pvpEquation1(Equation):
+    """Vapor pressure equation object."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         a = tab['a_pvp']
         b = tab['b_pvp']
         c = tab['c_pvp']
@@ -161,11 +253,17 @@ class pvpEquation1(Equation):
         self.fid = fid
 
     def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         # Torr
         a = self.a
         b = self.b
         c = self.c
-        logP = a - (b / (tem + c) )
+        logP = a - (b / (tem + c))
 
         # Bar
         P = math.pow(10, logP) * 1.01325/760.0
@@ -176,7 +274,16 @@ class pvpEquation1(Equation):
 
 
 class gamEquation1(Equation):
+    """Surface tension equation object."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         a = tab['a_gam']
         b = tab['b_gam']
         n = tab['n_gam']
@@ -203,6 +310,12 @@ class gamEquation1(Equation):
         self.fid = fid
 
     def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         b = self.b
         n = self.n
@@ -210,7 +323,16 @@ class gamEquation1(Equation):
 
 
 class alpEquation1(Equation):
+    """Thermal expansion coefficient equation object."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         a = tab['a_alp']
         b = tab['b_alp']
         n = tab['n_alp']
@@ -237,6 +359,12 @@ class alpEquation1(Equation):
         self.fid = fid
 
     def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         b = self.b
         n = self.n
@@ -246,7 +374,16 @@ class alpEquation1(Equation):
 
 
 class hcpEquation1(Equation):
+    """Heat capacity at constant pressure equation object - Type 1."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         if tab.shape[0] != 1:
             print(tab)
             print('Multiple rows found when creating Equation::hcpEquation1()')
@@ -282,14 +419,29 @@ class hcpEquation1(Equation):
         self.tem_max = tem_max
 
     def getData(self, tem_room, nPoints, tem_convert):
-        #print('Equation 1')
-        #print(self.a, self.b, self.tem_min, self.tem_max)
+        """Returns x and y values given table with coefficients of equation.
+
+        :param tem_room: (float) Room temperature.
+        :param nPoints: (int) Number of points to plot.
+        :param tem_convert: (float) Constant to convert unit.
+        :return:
+            X: (numpy.ndarray) Computed x values.
+            Y: (numpy.ndarray) Computed y values
+            fid: (numpy.ndarray) List of annotations.
+        """
+
         if self.a == '%' or self.a == '-':
             return [], [], []
         X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
         return X, Y, fid
 
     def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         b = self.b
         c = self.c
@@ -304,7 +456,16 @@ class hcpEquation1(Equation):
 
 
 class hcpEquation2(Equation):
+    """Heat capacity at constant pressure equation object - Type 2."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         if tab.shape[0] != 1:
             print(tab)
             print('Multiple rows found when creating Equation::hcpEquation1()')
@@ -340,13 +501,29 @@ class hcpEquation2(Equation):
         self.fid = fid
 
     def getData(self, tem_room, nPoints, tem_convert):
-        #print('Equation 2')
+        """Returns x and y values given table with coefficients of equation.
+
+        :param tem_room: (float) Room temperature.
+        :param nPoints: (int) Number of points to plot.
+        :param tem_convert: (float) Constant to convert unit.
+        :return:
+            X: (numpy.ndarray) Computed x values.
+            Y: (numpy.ndarray) Computed y values
+            fid: (numpy.ndarray) List of annotations.
+        """
+
         if self.a == '%':
             return [], [], []
         X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
         return X, Y, fid
 
     def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         b = self.b
         c = self.c
@@ -361,7 +538,16 @@ class hcpEquation2(Equation):
 
 
 class hcpEquation3(Equation):
+    """Heat capacity at constant pressure equation object - Type 3."""
+
     def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        super(Equation, self).__init__(tab)
+
         if tab.shape[0] != 1:
             print(tab)
             print('Multiple rows found when creating Equation::hcpEquation1()')
@@ -406,13 +592,29 @@ class hcpEquation3(Equation):
         self.fid = fid
 
     def getData(self, tem_room, nPoints, tem_convert):
-        #print('Equation 3')
+        """Returns x and y values given table with coefficients of equation.
+
+        :param tem_room: (float) Room temperature.
+        :param nPoints: (int) Number of points to plot.
+        :param tem_convert: (float) Constant to convert unit.
+        :return:
+            X: (numpy.ndarray) Computed x values.
+            Y: (numpy.ndarray) Computed y values
+            fid: (numpy.ndarray) List of annotations.
+        """
+
         if self.a == '%':
             return [], [], []
         X, Y, fid = Equation.getData(self, tem_room, nPoints, tem_convert)
         return X, Y, fid
 
     def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
         a = self.a
         b = self.b
         c = self.c
