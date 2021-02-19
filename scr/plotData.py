@@ -25,7 +25,7 @@ import os
 
 
 import selectData
-import select_points
+import highlight_points
 import myDataStructure
 
 
@@ -39,7 +39,7 @@ def select_data(fig, ax, x_values, y_values):
     :return:
     """
 
-    highlighter = select_points.Highlighter(ax, x_values, y_values)
+    highlighter = highlight_points.Highlighter(ax, x_values, y_values)
     plt.show()
     selected_regions = highlighter.mask
 
