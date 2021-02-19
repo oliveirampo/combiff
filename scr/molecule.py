@@ -81,11 +81,11 @@ class Molecule:
 
 class moleculeEncoder(json.JSONEncoder):
     """JSON <http://json.org> encoder for Molecule data structure.
-        Returns a serializable object.
+    Returns a serializable object.
 
-        Methods:
-            def default(obj)
-        """
+    Functions:
+        def default(obj)
+    """
 
     def default(self, obj):
         """Returns a serializable object for ``o``, or calls the base implementation
