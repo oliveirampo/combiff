@@ -238,7 +238,7 @@ def getCids(dbsEntries, molList, path):
     for larsCode in dbsEntries:
         # print(larsCode)
         factory = dbsEntries[larsCode].getFactory('cpd')
-        parser = factory.createParser()
+        parser = factory.getParser()
         dfTable = parser.readRelation(path)
 
         # TODO - match by smiles and inchikey (make it more general)
@@ -357,7 +357,7 @@ def getData(dbsEntries, molList, path, propCod):
             tables[prop][larsCod] = []
 
             factory = dbsEntries[larsCod].getFactory(prop)
-            parser = factory.createParser()
+            parser = factory.getParser()
             dfTable = parser.readRelation(path)
 
             # match by cid

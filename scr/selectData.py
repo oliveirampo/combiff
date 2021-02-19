@@ -185,7 +185,7 @@ def getDbsData(prop, larsCode, dbsEntries):
 
     dbsEntry = dbsEntries[larsCode]
     dbsFactory = dbsEntry.getFactory(prop)
-    dbsRelation = dbsFactory.createRelation()
+    dbsRelation = dbsFactory.getRelation()
 
     return dbsRelation, dbsFactory
 

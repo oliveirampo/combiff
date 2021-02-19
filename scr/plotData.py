@@ -185,7 +185,7 @@ def plotHvb(propCod, tables, smiles, dbsEntries, defaultPressure, x_values, y_va
 
         dbsEntry = dbsEntries[larsCode]
         dbsFactory = dbsEntry.getFactory(prop)
-        dbsRelation = dbsFactory.createRelation()
+        dbsRelation = dbsFactory.getRelation()
 
         marker = dbsRelation.getMarker()
         color = dbsRelation.getColor()
