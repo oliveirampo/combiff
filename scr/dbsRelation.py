@@ -1,4 +1,30 @@
-from abc import ABC, abstractmethod
+"""Module that handles DBS relations.
+
+Classes:
+    DbsRelation
+    dbsCompound(DbsRelation)
+    dbsDensity(DbsRelation)
+    dbsVaporizationEnthalpy(DbsRelation)
+    dbsVaporizationEnthalpyAtBoilingPoint(DbsRelation)
+    dbsMeltingPoint(DbsRelation)
+    dbsBoilingPoint(DbsRelation)
+    dbsCriticalTemperature(DbsRelation)
+    dbsVaporPressure(DbsRelation)
+    dbsSurfaceTension(DbsRelation)
+    dbsIsothermalCompressibility(DbsRelation)
+    dbsThermalExpansionCoefficient(DbsRelation)
+    dbsHeatCapacityAtConstantPressure(DbsRelation)
+    dbsPermittivity(DbsRelation)
+    dbsSelfDiffusionCoefficient(DbsRelation)
+    dbsViscosity(DbsRelation)
+
+Methods:
+    checkPressure(col, data, defaultPressure)
+    checkTemperature(col, data)
+    checkProperty(col, data, propVar)
+    getUnit(prop)
+"""
+
 import numpy as np
 import sys
 
@@ -6,8 +32,17 @@ import sys
 import myExceptions
 
 
-# if pre == '%' -> pre = 1.0 kPa
 def checkPressure(col, data, defaultPressure):
+    """Checks if pressure values are consistent.
+    Of pre == '%' -> pre = 1.0 kPa
+
+    :param col: (str) Name of columns.
+    :param data: (pandas DataFrame) Table with data.
+    :param defaultPressure: (float) Default pressure.
+    :return:
+        data: (pandas DataFrame) Table with data.
+    """
+
     rm = []
 
     for i in range(data[:, col].shape[0]):
@@ -34,8 +69,16 @@ def checkPressure(col, data, defaultPressure):
     return data
 
 
-# if tem == '%' -> remove data
 def checkTemperature(col, data):
+    """Checks if temperature values are consistent.
+    If tem == '%' -> remove row.
+
+    :param col: (str) Name of columns.
+    :param data: (pandas DataFrame) Table with data.
+    :return:
+        data: (pandas DataFrame) Table with data.
+    """
+
     rm = []
 
     for i in range(data[:, col].shape[0]):
@@ -52,7 +95,7 @@ def checkTemperature(col, data):
                 data[i, col] = val[:-1]
             else:
                 print(data[i, col])
-                raise myExceptions.WrongProperty('temperature', val, 'dbsRelation:checkTemperaure()')
+                raise myExceptions.WrongProperty('temperature', val, 'dbsRelation:checkTemperature()')
 
     for idx in reversed(rm):
         data = np.delete(data, idx, 0)
@@ -60,8 +103,17 @@ def checkTemperature(col, data):
     return data
 
 
-# if val == '%' -> remove data
 def checkProperty(col, data, propVar):
+    """Checks if property values are consistent.
+    If val == '%' -> remove data.
+
+    :param col: (str) Name of columns.
+    :param data: (pandas DataFrame) Table with data.
+    :param propVar: (str) Code of relation.
+    :return:
+        data: (pandas DataFrame) Table with data.
+    """
+
     rm = []
 
     for i in range(data[:, col].shape[0]):
@@ -88,34 +140,93 @@ def checkProperty(col, data, propVar):
     return data
 
 
+def getUnit(prop):
+    """Returns unit property.
 
-def getLabel(prop):
+    :param prop: (str) Property code.
+    :return: (str)
+    """
+
     if prop == 'dns':
-        return dbsDensity.getLabel()
+        return dbsDensity.getUnit()
     elif prop == 'hvp':
-        return dbsVaporizationEnthalpy.getLabel()
+        return dbsVaporizationEnthalpy.getUnit()
     elif prop == 'gam':
-        return dbsSurfaceTension.getLabel()
+        return dbsSurfaceTension.getUnit()
     elif prop == 'kap':
-        return dbsIsothermalCompressibility.getLabel()
+        return dbsIsothermalCompressibility.getUnit()
     elif prop == 'alp':
-        return dbsThermalExpansionCoefficient.getLabel()
+        return dbsThermalExpansionCoefficient.getUnit()
     elif prop == 'hcp':
-        return dbsHeatCapacityAtConstantPressure.getLabel()
+        return dbsHeatCapacityAtConstantPressure.getUnit()
     elif prop == 'eps':
-        return dbsPermittivity.getLabel()
+        return dbsPermittivity.getUnit()
     elif prop == 'diffus':
-        return dbsSelfDiffusionCoefficient.getLabel()
+        return dbsSelfDiffusionCoefficient.getUnit()
     elif prop == 'etd':
-        return dbsViscosity.getLabel()
+        return dbsViscosity.getUnit()
     else:
         print('No such property: {}'.format(prop))
         sys.exit(1)
 
 
-class DbsRelation(ABC):
+class DbsRelation:
+    """DbsRelation object.
+
+    Attributes:
+        larsCode: (str) LARS code.
+        prop: (prop) Property code.
+        rel: (str) Relation code.
+        var: (str) Code for property in relation table.
+        col: (str) Name of columns.
+        pre: (str) Code for pressure in relation table.
+        tem: (str) Code for temperature in relation table.
+        fid: (str) Code for annotation in relation table.
+        met: (str) Code for method in relation table.
+        prop_convert: (str) Constant to convert property unit.
+        tem_convert: (str) Constant to convert temperature unit.
+        pre_convert: (str) Constant to convert pressure unit.
+        marker: (str) Marker to be used in plot.
+        color: (str) Color to be used in plot.
+
+        preCol: (int, 0)
+        temCol: (int, 1)
+        propCol: (int, 2)
+        fidCol: (int, 3)
+        metCol: (int, 4)
+
+    Functions:
+        getUnit()
+        getMarker(self)
+        getColor(self)
+        getValues(data)
+        getData(tab, defaultPressure)
+        getDataHelper(tab, defaultPressure)
+        checkData(data, defaultPressure)
+        convertTemperature(col, data)
+        convertProperty(col, data)
+    """
+
     def __init__(self, larsCode, prop, rel, var, col, pre, tem, fid, met, prop_convert, tem_convert, pre_convert,
                  marker, color):
+        """Constructs all the necessary attributes for this object.
+
+        :param larsCode: (str) LARS code.
+        :param prop: (prop) Property code.
+        :param rel: (str) Relation code.
+        :param var: (str) Code for property in relation table.
+        :param col: (str) Name of columns.
+        :param pre: (str) Code for pressure in relation table.
+        :param tem: (str) Code for temperature in relation table.
+        :param fid: (str) Code for annotation in relation table.
+        :param met: (str) Code for method in relation table.
+        :param prop_convert: (str) Constant to convert property unit.
+        :param tem_convert: (str) Constant to convert temperature unit.
+        :param pre_convert: (str) Constant to convert pressure unit.
+        :param marker: (str) Marker to be used in plot.
+        :param color: (str) Color to be used in plot.
+        """
+
         self.larsCode = larsCode
         self.prop = prop
         self.rel = rel
@@ -141,17 +252,34 @@ class DbsRelation(ABC):
         self.fidCol = 3
         self.metCol = 4
 
-    @abstractmethod
-    def getLabel():
+    @staticmethod
+    def getUnit():
+        """Returns unit of property in relation."""
+
         pass
 
     def getMarker(self):
+        """Returns marker to be used in plot."""
+
         return self.marker
 
     def getColor(self):
+        """Returns color to be used in plot."""
+
         return self.color
 
     def getValues(self, data):
+        """Returns values from table.
+
+        :param data: (pandas DataFrame) Table with data.
+        :return:
+            pre: (numpy array) Pressure.
+            tem: (numpy array) Temperature.
+            val: (numpy array) Property value.
+            fid: (numpy array) Annotation.
+            met: (numpy array) Method.
+        """
+
         pre = data[:, self.preCol]
         tem = data[:, self.temCol]
         val = data[:, self.propCol]
@@ -165,6 +293,14 @@ class DbsRelation(ABC):
         return pre, tem, val, fid, met
 
     def getData(self, tab, defaultPressure):
+        """Returns data (pressure, temperature and value) for the current relation.
+
+        :param tab: (pandas DataFrame) Table with data.
+        :param defaultPressure: (float) Default pressure.
+        :return:
+            data: (pandas DataFrame) Table with data.
+        """
+
         data = self.getDataHelper(tab, defaultPressure)
         data = self.checkData(data, defaultPressure)
 
@@ -177,6 +313,14 @@ class DbsRelation(ABC):
         return data
 
     def getDataHelper(self, tab, defaultPressure):
+        """Helper function to extract data from table.
+
+        :param tab: (pandas DataFrame) Table with all data.
+        :param defaultPressure: (float) Default pressure.
+        :return:
+            data: (pandas DataFrame) Table with data [pressure, temperature, property value, annotation, method]
+        """
+
         columns = self.col.strip().split()
 
         if columns[1] != 'rec':
@@ -217,6 +361,14 @@ class DbsRelation(ABC):
         return data
 
     def checkData(self, data, defaultPressure):
+        """Checks if data is consistent.
+
+        :param data: (numpy.ndarray) Data.
+        :param defaultPressure: (float) Default pressure.
+        :return:
+            (numpy.ndarray) Data.
+        """
+
         # check pressure
         data = checkPressure(self.preCol, data, defaultPressure)
 
@@ -230,41 +382,74 @@ class DbsRelation(ABC):
         return data
 
     def convertTemperature(self, col, data):
+        """Converts temperature unit.
+
+        :param col: (str) Column names.
+        :param data: (numpy.ndarray) Data.
+        """
+
         tem_convert = self.tem_convert
         if tem_convert != 0.0:
             data[:, col] = tem_convert + data[:, col].astype(np.float)
 
     def convertProperty(self, col, data):
+        """Converts pressure unit.
+
+        :param col: (str) Column names.
+        :param data: (numpy.ndarray) Data.
+        :return:
+        """
+
         prop_convert = self.prop_convert
         if prop_convert != 1:
             data[:, col] = prop_convert * data[:, col].astype(np.float)
 
 
 class dbsCompound(DbsRelation):
+    """Implements DBS compound relation for a given source (LARS code)."""
+
     def getData(self, tab, defaultPressure):
         raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getData{}')
 
-    def getLabel():
-        raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getLabel{}')
+    @staticmethod
+    def getUnit():
+        raise myExceptions.MethodNotImplemented('Method not implemented: dbsRelation::getUnit{}')
 
 
 class dbsDensity(DbsRelation):
-    def getLabel():
+    """Implements DBS density relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$\rho_{liq} \/ [kg \cdot m^{-1}]$'
 
 
 class dbsVaporizationEnthalpy(DbsRelation):
-    def getLabel():
+    """Implements DBS vaporization enthalpy relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
 
 
 class dbsVaporizationEnthalpyAtBoilingPoint(DbsRelation):
-    def getLabel():
+    """Implements DBS vaporization enthalpy at constant pressure relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$\Delta H_{vap} \/ [kJ \cdot mol^{-1}]$'
 
 
 class dbsMeltingPoint(DbsRelation):
+    """Implements DBS melting point relation for a given source (LARS code)."""
+
     def convertProperty(self, col, data):
+        """Converts temperature unit.
+
+        :param col: (str) Column names.
+        :param data: (numpy.ndarray) Data.
+        """
+
         if data.shape[0] == 0:
             return
 
@@ -272,66 +457,108 @@ class dbsMeltingPoint(DbsRelation):
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col].astype(np.float)
 
-    def getLabel():
+    @staticmethod
+    def getUnit():
         return r'$Tm [K]$'
 
 
 class dbsBoilingPoint(DbsRelation):
+    """Implements DBS boiling point relation for a given source (LARS code)."""
+
     def convertProperty(self, col, data):
+        """Converts temperature unit.
+
+        :param col: (str) Column names.
+        :param data: (numpy.ndarray) Data.
+        """
+
         prop_convert = self.prop_convert
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col].astype(np.float)
 
-    def getLabel():
+    @staticmethod
+    def getUnit():
         return r'$Tb [K]$'
 
 
 class dbsCriticalTemperature(DbsRelation):
+    """Implements DBS critical temperature relation for a given source (LARS code)."""
+
     def convertProperty(self, col, data):
+        """Converts temperature unit.
+
+        :param col: (str) Column names.
+        :param data: (numpy.ndarray) Data.
+        """
+
         prop_convert = self.prop_convert
         if prop_convert != 1:
             data[:, col] = prop_convert + data[:, col]
 
-    def getLabel():
+    @staticmethod
+    def getUnit():
         return r'$Tc [K]$'
 
 
 class dbsVaporPressure(DbsRelation):
-    def getLabel():
+    """Implements DBS vapor pressure relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$v_P [bar]$'
 
 
 class dbsSurfaceTension(DbsRelation):
-    def getLabel():
+    """Implements DBS surface tension relation for a given source (LARS code)."""
+    @staticmethod
+    def getUnit():
         return r'$\gamma \, [mN \cdot m^{-1}]$'
 
 
 class dbsIsothermalCompressibility(DbsRelation):
-    def getLabel():
-        #return r'$\kappa \, [10^{-5} bar^{-1}]$'
+    """Implements DBS isothermal compressibility relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
+        # return r'$\kappa \, [10^{-5} bar^{-1}]$'
         return r'$\kappa \, [bar^{-1}]$'
 
 
 class dbsThermalExpansionCoefficient(DbsRelation):
-    def getLabel():
+    """Implements DBS thermal expansion coefficient relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$\alpha \, [10^{-4} \, K^{-1}]$'
 
 
 class dbsHeatCapacityAtConstantPressure(DbsRelation):
-    def getLabel():
+    """Implements DBS heat capacity at constant pressure relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$c_P \, [JK^{-1} \, mol^{-1}]$'
 
 
 class dbsPermittivity(DbsRelation):
-    def getLabel():
+    """Implements DBS permittivity relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$\epsilon$'
 
 
 class dbsSelfDiffusionCoefficient(DbsRelation):
-    def getLabel():
+    """Implements DBS self diffusion coefficient relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$D \, [10^{-9} \, m^2 \, s^{-1}]$'
 
 
 class dbsViscosity(DbsRelation):
-    def getLabel():
+    """Implements DBS viscosity relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
         return r'$\eta \, [10^{-3} \, Pa \cdot s]$'
