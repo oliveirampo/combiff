@@ -106,7 +106,7 @@ class nullEquation(Equation):
     """
 
     def __init__(self, tab):
-        super(Equation, self).__init__(tab)
+        super(nullEquation, self).__init__(tab)
 
     def compute(self, tem):
         pass
@@ -126,8 +126,6 @@ class dnsEquation1(Equation):
 
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
-
-        super(Equation, self).__init__(tab)
 
         a = tab['a_dns']
         b = tab['b_dns']
@@ -176,8 +174,6 @@ class hvpEquation1(Equation):
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
 
-        super(Equation, self).__init__(tab)
-
         a = tab['a_hvp']
         n = tab['n_hvp']
         tem_cri = tab['tem_cri']
@@ -224,8 +220,6 @@ class pvpEquation1(Equation):
 
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
-
-        super(Equation, self).__init__(tab)
 
         a = tab['a_pvp']
         b = tab['b_pvp']
@@ -282,8 +276,6 @@ class gamEquation1(Equation):
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
 
-        super(Equation, self).__init__(tab)
-
         a = tab['a_gam']
         b = tab['b_gam']
         n = tab['n_gam']
@@ -330,8 +322,6 @@ class alpEquation1(Equation):
 
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
-
-        super(Equation, self).__init__(tab)
 
         a = tab['a_alp']
         b = tab['b_alp']
@@ -381,8 +371,6 @@ class hcpEquation1(Equation):
 
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
-
-        super(Equation, self).__init__(tab)
 
         if tab.shape[0] != 1:
             print(tab)
@@ -464,8 +452,6 @@ class hcpEquation2(Equation):
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
 
-        super(Equation, self).__init__(tab)
-
         if tab.shape[0] != 1:
             print(tab)
             print('Multiple rows found when creating Equation::hcpEquation1()')
@@ -545,8 +531,6 @@ class hcpEquation3(Equation):
 
         :param tab: (pandas DataFrame) Table with coefficients for equation.
         """
-
-        super(Equation, self).__init__(tab)
 
         if tab.shape[0] != 1:
             print(tab)
