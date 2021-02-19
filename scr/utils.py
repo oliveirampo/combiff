@@ -2,10 +2,17 @@ from rdkit import Chem
 
 
 def getCanonicalSmiles(smiles):
+    """Returns canonicalized SMILES string by RDKit package.
+
+    :param smiles: (str) SMILES string.
+    :return:
+        smiles: (str) Canonicalized SMILES string.
+    """
+
     rdKitMol = Chem.MolFromSmiles(smiles)
 
     # could not convert smiles to molecule
-    if rdKitMol == None:
+    if rdKitMol is None:
         print(smiles)
         return smiles
 
@@ -14,6 +21,13 @@ def getCanonicalSmiles(smiles):
 
 
 def canonicalizeSmiles(df):
+    """Returns table with canonizalized SMILES strings.
+
+    :param df: (pandas DataFrame) Table.
+    :return:
+        df: (pandas DataFrame) Table with canonicalized SMILES strings..
+    """
+
     for idx, row in df.iterrows():
         smiles = row['smiles']
         smiles = getCanonicalSmiles(smiles)
@@ -23,6 +37,17 @@ def canonicalizeSmiles(df):
 
 
 def createCod(cur_family, frm, letter, run, used):
+    """Returns molecule code given Family letter code.
+
+    :param cur_family:
+    :param frm:
+    :param letter:
+    :param run:
+    :param used:
+    :return:
+    """
+    # TODO
+
     nX = cur_family.get_num_of_other_atoms(frm)
     nC = cur_family.get_num_of_carbons(frm)
 
