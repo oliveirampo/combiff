@@ -172,7 +172,4 @@ def openSelectedDataFile(dbsConfig):
     with open(fileName) as jsonFile:
         selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)
 
-    print(selectedData)
-    import sys
-    sys.exit(123)
     return selectedData
