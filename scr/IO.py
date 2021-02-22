@@ -172,6 +172,8 @@ def openSelectedDataFile(dbsConfig):
     """
 
     fileName = dbsConfig.getOutFileName('molJsonFile')
+    if not os.path.exists(fileName):
+        return {}
 
     with open(fileName) as jsonFile:
         selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)

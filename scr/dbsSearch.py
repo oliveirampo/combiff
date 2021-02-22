@@ -211,6 +211,18 @@ class dbsConfiguration:
             raise myExceptions.VariableNotDefined('family')
         return fileName
 
+    def getPlotDir(self):
+        """Returns directory where plots will be saved."""
+
+        plotDir = self.config.get('directories', 'plotDir')
+        return plotDir
+
+    def getSimDir(self):
+        """Returns directory with simulation results."""
+
+        simDir = self.config.get('directories', 'simulationDir')
+        return simDir
+
 
 def run(dbsConfig):
     """Get identifiers and all available data for a given molecule in DBS

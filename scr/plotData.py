@@ -18,15 +18,16 @@ Methods:
 """
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
-import json
 import sys
 import os
 
-
-import selectData
 import highlight_points
-import myDataStructure
+import selectData
+import dbsSearch
+import dbs
+import IO
 
 
 def select_data(fig, ax, x_values, y_values):
@@ -54,15 +55,25 @@ def plotAll(dbsConfig):
     :return:
     """
 
-    fileName = dbsConfig.getOutFileName('molJsonFile')
+    # 00_file.lst
+    molListFile = sys.argv[2]
+    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['frm', 'cas', 'nam', 'inchi', 'smiles'])
 
-    with open(fileName) as jsonFile:
-        selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)
+    allSelectedData = IO.openSelectedDataFile(dbsConfig)
 
-    data = selectedData[0]
-    # print(data.mlp, data.blp)
-    # print(data)
-    print('TODO')
+    dbsFileName = dbsConfig.getDbsFileName()
+    dbsEntries = dbs.getDbsEntries(dbsFileName)
+    defaultPressure = dbsConfig.getDefaultPressure()
+    tem_room = dbsConfig.getDefaultTemperature()
+    nPoints = dbsConfig.getNumberOfPoints()
+
+    # get tables with data
+    properties = dbsConfig.getPropListToBePlotted()
+    propCod = dbsConfig.getPropCod()
+    tables = dbsSearch.readData(propCod)
+
+    selectData.plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, properties, propCod, tables,
+                          molList, allSelectedData, False, False, True, True)
 
 
 def plotPoint(tem, val, larsCode, marker, color, linewidth):

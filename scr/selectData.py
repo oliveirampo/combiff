@@ -62,24 +62,45 @@ def manualSelection(dbsConfig):
     tem_room = dbsConfig.getDefaultTemperature()
     nPoints = dbsConfig.getNumberOfPoints()
 
-    allSelectedData = {}
-    selectedDataFileName = dbsConfig.getOutFileName('molJsonFile')
-    if os.path.exists(selectedDataFileName):
-        allSelectedData = IO.openSelectedDataFile(dbsConfig)
+    allSelectedData = IO.openSelectedDataFile(dbsConfig)
+
+    plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, properties, propCod, tables, molList,
+             allSelectedData, True, True, False, False)
+
+
+def plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, properties, propCod, tables, molList,
+             allSelectedData, isSelectData, isWriteData, isSavePlot, isPlotSim):
+    """Plots all data.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    :param dbsEntries: (dict of dbsEntry objects) Dictionary that maps LARS code to dbsEntry objects.
+    :param defaultPressure: (float) Default pressure.
+    :param tem_room: (float) Room temperature.
+    :param nPoints: (int) Number of points to plot.
+    :param properties: (dict) Dictionary of properties.
+    :param propCod: (dict) Map from property code to LARS code available for this property.
+    :param tables: tables: (dict) Dictionary of pandas DataFrame that maps property codes to data.
+    :param molList: (pandas DataFrame) Table with molecules and identifiers.
+    :param allSelectedData: (dict of selectedData) Dict that maps SMILES to object that contains the selected data.
+    :param isSelectData: (float) Allow data selection.
+    """
 
     for prop in properties:
-        print(prop)
         propUnit = getUnit(prop)
 
+        smilesVariable = dbsConfig.getVariable('smiles')
+
+        simDir = dbsConfig.getSimDir()
+        simDataFile = '{}/{}.dat'.format(simDir, prop)
+        if os.path.exists(simDataFile):
+            allSimData = pd.read_csv(simDataFile, sep='\s+', names=[smilesVariable, 'tem', 'val'])
+
         for idx, row in molList.iterrows():
-            smiles = row['smiles']
+            smiles = row[smilesVariable]
 
             selectedData = myDataStructure.SelectedData(smiles)
             if smiles in allSelectedData:
                 selectedData = allSelectedData[smiles]
-
-            if selectedData.hasData(prop):
-                continue
 
             mlpVar, mlp = getTransitionPoint('meltingPoint', defaultPressure, dbsConfig, dbsEntries, propCod, tables,
                                              smiles)
@@ -153,9 +174,8 @@ def manualSelection(dbsConfig):
 
                         for x in X: pre_values.append(defaultPressure)
 
-            x_values, y_values, pre_values, src_values, fid_values, met_values = convertArrays(prop, x_values, y_values,
-                                                                                            pre_values, src_values,
-                                                                                            fid_values, met_values)
+            x_values, y_values, pre_values, src_values, fid_values, met_values = \
+                convertArrays(prop, x_values, y_values, pre_values, src_values, fid_values, met_values)
 
             plotData.plotDetails(fig, row, propUnit)
 
@@ -163,15 +183,40 @@ def manualSelection(dbsConfig):
 
             plotData.markPressure(x_values, y_values, pre_values, defaultPressure)
 
-            selectedPointsMask = []
-            if len(x_values) != 0: selectedPointsMask = plotData.select_data(fig, ax, x_values, y_values)
-
-            selectedData.appendProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values, fid_values, met_values)
-
-            if selectedData.hasData(prop):
+            # Plot simulated data
+            if isPlotSim:
                 print(smiles)
-                allSelectedData[smiles] = selectedData
-                IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+                simData = allSimData.loc[allSimData[smilesVariable] == smiles]
+                if simData.shape[0] != 0:
+                    for idxSim, rowSim in simData.iterrows():
+                        simTem = rowSim['tem']
+                        simVal = rowSim['val']
+                        plotData.plotPoint(simTem, simVal, 'Simulated', 'd', 'red', linewidth=0.0)
+
+            selectedPointsMask = []
+            if len(x_values) != 0:
+                selectedPointsMask = plotData.select_data(fig, ax, x_values, y_values)
+
+            if isSelectData:
+                selectedData.appendProperty(prop, selectedPointsMask, x_values, y_values, pre_values, src_values,
+                                            fid_values, met_values)
+
+            if isWriteData:
+                if selectedData.hasData(prop):
+                    print(smiles)
+                    allSelectedData[smiles] = selectedData
+                    IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+
+            if isSavePlot:
+                plotDir = dbsConfig.getPlotDir()
+                code = selectedData.code
+
+                if not code:
+                    print('\nMolecule without code.\nRun option -assignCode for all molecules.')
+                    sys.exit(1)
+
+                plotFileName = '{}/plot_{}_{}.png'.format(plotDir, prop, code)
+                fig.savefig(plotFileName)
 
             plt.close(fig)
 
