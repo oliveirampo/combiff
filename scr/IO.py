@@ -7,10 +7,12 @@ Methods:
     readCiDSmilesFile(fileName)
     writeSelectedDataToJson(dbsConfig, selectedData)
     openSelectedDataFile(dbsConfig)
+    writeMolDataFile(dbsConfig)
 """
 
 import pandas as pd
 import json
+import sys
 import os
 
 from molecule import Molecule
@@ -173,3 +175,59 @@ def openSelectedDataFile(dbsConfig):
         selectedData = json.load(jsonFile, object_hook=myDataStructure.selectedDataDecoder)
 
     return selectedData
+
+
+def writeMolDataFile(dbsConfig):
+    """Writes selected data from json file to plain text file.
+    The files created are:
+        - mol file to run SAMOS or GROMOS simulation package.
+        - file with source code for each property.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+
+    prop == 'dns' gives the same results as prop == 'hvp'
+
+    """
+
+    allSelectedData = openSelectedDataFile(dbsConfig)
+
+    propertyList = dbsConfig.getPropListToBeWrittenToFile()
+
+    # write dns, hvp, mlp, blp, tem_cri and eps for SAMOS simulation
+    writeMolDat = False
+    for prop in propertyList:
+        if (prop == 'dns') or (prop == 'hvp'):
+            writeMolDat = True
+            break
+
+    if writeMolDat:
+        for smiles in allSelectedData:
+            print(smiles)
+            selectedData = allSelectedData[smiles]
+            print(selectedData)
+
+    # write dns, hvp, eps, and prop for GROMOS simulation.
+
+
+def readCodSmilesMap(fileName):
+    """Reads plain file that maps SMILES to molecule code.
+    # Checks if column of SMILES is unique.
+    # Checks if column of codes is unique.
+
+    :param fileName: (str) Name of file.
+    :return:
+    """
+
+    df = pd.read_csv(fileName, sep='\s+', names=['code', 'smiles'])
+
+    # check if columns only have unique values.
+    isUnique = df['code'].is_unique
+    if isUnique is False:
+        print('\n\tCode column has duplicate values in {}'.format(fileName))
+        sys.exit(123)
+    isUnique = df['smiles'].is_unique
+    if isUnique is False:
+        print('\n\tSMILES column has duplicate values in {}'.format(fileName))
+        sys.exit(123)
+
+    return df

@@ -20,8 +20,12 @@
     Adds selected dns and hvp values from files of older version of this script.
 -addSelectedDataForProperty
     Adds additional values of properties from files of older version of this script.
+-assignCode
+    Assigns code to molecule. This code should be easier to grep than the SMILES string.
 -plotData
     Saves plot with all data and simulated results if input file is given.
+-writeOutputFiles
+    Writes selected data from json file to plain text file.
 
 The tables with data from different sources are found in 'wrkDir/tmp/' directory.
 """
@@ -35,6 +39,7 @@ import writeIdentifiers
 import dbsSearch
 import selectData
 import plotData
+import IO
 
 
 def main():
@@ -74,11 +79,22 @@ def main():
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.getSelectedDataForProperty(dbsConfig)
 
+        elif job == '-assignCode':
+            dbsConfigurationFile = '../inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+            selectData.assignCode(dbsConfig)
+
         elif job == '-plotData':
             dbsConfigurationFile = '../inp/dbs.conf'
             dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             # TODO
             plotData.plotAll(dbsConfig)
+
+        elif job == '-writeOutputFiles':
+            dbsConfigurationFile = '../inp/dbs.conf'
+            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
+
+            IO.writeMolDataFile(dbsConfig)
 
         else:
             print('Option not implemented: {}'.format(job))

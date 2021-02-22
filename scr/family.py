@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-import sys
+from abc import ABC
 import re
 
 
@@ -37,23 +36,44 @@ class Family(ABC):
         """
 
         form = frm.replace('_','')
-        atoms = re.findall(r'(\D*)(\d*)', form)
+        atoms = re.findall(r'([A-Z][a-z]?)(\d*)', form)
 
-        if atoms[0][0] != 'C':
-            if form[1] == 'l':
-                sys.exit('ERROR: TODO')
+        nC = 0
+        for i in range(len(atoms)):
+            atm = atoms[i]
 
-            elif form[1].isalpha():
-                return 1
+            if atm[0] == 'C':
+                nC = atm[1]
+                if nC == '':
+                    nC = 1
+                else:
+                    nC = int(nC)
 
-            sys.exit('ERROR: first atom is not C')
+                break
 
-        # print(atoms[0][1], frm)
-        return int(atoms[0][1])
+        return nC
 
-    @abstractmethod
-    def get_num_of_other_atoms(self, form):
-        pass
+    @staticmethod
+    def get_num_of_other_atoms(form):
+        """Returns number of atoms excluding Carbon atoms.
+
+        :param form: (str) Molecular formula.
+        :return:
+            (int) Number of atoms.
+        """
+
+        atoms = re.findall(r'([A-Z][a-z]?)(\d*)', form)
+
+        # remove Carbon atom
+        ignore = []
+        for i in range(len(atoms)):
+            atm = atoms[i]
+
+            if atm[0] == 'C':
+                ignore.append(i)
+
+        count = Family.count_atoms(atoms, ignore)
+        return count
 
     @staticmethod
     def get_num_of_other_atoms_without_H(form):
@@ -64,28 +84,39 @@ class Family(ABC):
             (int) Number of atoms.
         """
 
-        atoms = re.findall(r'(\D*)(\d*)', form)
+        atoms = re.findall(r'([A-Z][a-z]?)(\d*)', form)
 
-        # remove first and second items
-        if atoms[0][0] != 'C':
-            sys.exit('ERROR: first atom is not C')
-
-        if atoms[1][0] != 'H':
-            sys.exit('ERROR: second atom is not H')
-
-        atoms = atoms[2:]
-
-        # remove last item is empty
-        if not atoms[-1][0]:
-            atoms = atoms[:-1]
-
-        count = 0
+        # remove Carbon and Hydrogen atoms
+        ignore = []
         for i in range(len(atoms)):
-            # print(atoms[i])
-            n = atoms[i][1]
-            n = int(n)
-            count += n
-        # sys.exit('STOP')
+            atm = atoms[i]
+
+            if atm[0] == 'C':
+                ignore.append(i)
+
+            elif atm[0] == 'H':
+                ignore.append(i)
+
+        count = Family.count_atoms(atoms, ignore)
+
+        return count
+
+    @staticmethod
+    def count_atoms(atoms, ignore):
+        count = 0
+
+        for i in range(len(atoms)):
+            if i in ignore:
+                continue
+
+            elif atoms[i][1] == '':
+                count += 1
+
+            else:
+                n = atoms[i][1]
+                n = int(n)
+                count += n
+
         return count
 
 
@@ -99,24 +130,7 @@ class Dummy(Family):
         cod = 'DUMMY'
         nam = 'dummy'
 
-        super(Family, self).__init__(letter, cod, nam)
-
-    def get_num_of_other_atoms(self, form):
-        """Returns number of atoms excluding Carbon atoms.
-
-        :param form: (str) Molecular formula.
-        :return:
-            n: (int) Number of atoms.
-        """
-
-        atoms = re.findall(r'([FlrIONPS])(\d*)', form)
-        n = 0
-        for a in atoms:
-            if a[1] == '':
-                n += 1
-            else:
-                n += int(a[1])
-        return n
+        super(Dummy, self).__init__(letter, cod, nam)
 
 
 class ALK(Family):
@@ -127,17 +141,7 @@ class ALK(Family):
         cod = 'ALK'
         nam = 'alkane'
 
-        super(Family, self).__init__(letter, cod, nam)
-
-    def get_num_of_other_atoms(self, form):
-        """Returns number of atoms excluding Carbon and Hydrogen atoms.
-
-        :param form: (str) Molecular formula.
-        :return:
-            n: (int) Number of atoms.
-        """
-
-        return 0
+        super(ALK, self).__init__(letter, cod, nam)
 
 
 class ROH(Family):
@@ -148,25 +152,7 @@ class ROH(Family):
         cod = 'ROH'
         nam = 'alcohol'
 
-        super(Family, self).__init__(letter, cod, nam)
-
-    def get_num_of_other_atoms(self, form):
-        """Returns number of atoms excluding Carbon atoms.
-
-        :param form: (str) Molecular formula.
-        :return:
-            n: (int) Number of atoms.
-        """
-
-        atoms = re.findall(r'([FlrIONPS])(\d*)', form)
-        n = 0
-        for a in atoms:
-            if a[0] == 'O':
-                if a[1] == '':
-                    n += 3
-                else:
-                    n += int(a[1])
-        return n
+        super(ROH, self).__init__(letter, cod, nam)
 
 
 class HAL(Family):
@@ -177,25 +163,4 @@ class HAL(Family):
         cod = 'HAL'
         nam = 'halomethane'
 
-        super(Family, self).__init__(letter, cod, nam)
-
-    def get_num_of_other_atoms(self, form):
-        """Returns number of atoms excluding Carbon atoms.
-
-        :param form: (str) Molecular formula.
-        :return:
-            n: (int) Number of atoms.
-        """
-
-        atoms = re.findall(r'([FlrIONPS])(\d*)', form)
-        n = 0
-        for a in atoms:
-            if a[1] == '':
-                n += 1
-            else:
-                n += int(a[1])
-        return n
-
-
-
-
+        super(HAL, self).__init__(letter, cod, nam)

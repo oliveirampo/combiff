@@ -39,8 +39,8 @@ class dbsConfiguration:
         getDefaultPressure()
         getDefaultTemperature()
         getVariable(propName)
-        getPropList()
-        getRelations(prop)
+        getPropListToBePlotted()
+        getPropListToBeWrittenToFile()
         getNumberOfPoints()
         isHvp(prop)
         getOutFileName(typ)
@@ -142,7 +142,7 @@ class dbsConfiguration:
 
         return var
 
-    def getPropList(self):
+    def getPropListToBePlotted(self):
         """Returns list of properties to be plotted.
 
         :return:
@@ -150,6 +150,17 @@ class dbsConfiguration:
         """
 
         propList = self.config.get('plot', 'prop')
+        propList = propList.split()
+        return propList
+
+    def getPropListToBeWrittenToFile(self):
+        """Returns list of properties to be plotted.
+
+        :return:
+            propList: (list) List of properties.
+        """
+
+        propList = self.config.get('writeProperty', 'prop')
         propList = propList.split()
         return propList
 
@@ -185,7 +196,19 @@ class dbsConfiguration:
             fileName: (str) Name out output file.
         """
 
-        fileName = self.config.get('outputFiles', typ)
+        try:
+            fileName = self.config.get('outputFiles', typ)
+        except configparser.NoOptionError:
+            raise myExceptions.VariableNotDefined(typ)
+        return fileName
+
+    def getFamilyCode(self):
+        """Returns one letter family code."""
+
+        try:
+            fileName = self.config.get('writeProperty', 'family')
+        except configparser.NoOptionError:
+            raise myExceptions.VariableNotDefined('family')
         return fileName
 
 

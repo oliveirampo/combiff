@@ -13,7 +13,7 @@ def getCanonicalSmiles(smiles):
 
     # could not convert smiles to molecule
     if rdKitMol is None:
-        print(smiles)
+        print('SMILES not canonicalized: ', smiles)
         return smiles
 
     smiles = Chem.MolToSmiles(rdKitMol)
@@ -36,29 +36,25 @@ def canonicalizeSmiles(df):
     return df
 
 
-def createCod(cur_family, frm, letter, run, used):
+def createCod(letter, nC, nX, usedCodes):
     """Returns molecule code given Family letter code.
 
-    :param cur_family:
-    :param frm:
-    :param letter:
-    :param run:
-    :param used:
+    :param letter: (str) One letter family code.
+    :param nC: (str) Number of carbon atoms.
+    :param nX: (str) Number of other atoms.
     :return:
+        code: (str) Molecule code.
     """
-    # TODO
-
-    nX = cur_family.get_num_of_other_atoms(frm)
-    nC = cur_family.get_num_of_carbons(frm)
 
     if nC == 10:
         nC = 0
 
+    run = 1
     run_code = '{}{}{}{}'.format(letter, nC, nX, str(run).zfill(2))
 
-    while run_code in used:
+    while run_code in usedCodes:
         run += 1
         run_code = '{}{}{}{}'.format(letter, nC, nX, str(run).zfill(2))
 
-    used.append(run_code)
+    usedCodes.append(run_code)
     return run_code

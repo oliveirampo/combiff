@@ -12,9 +12,12 @@ Methods:
     getSelectedDataForProperty(dbsConfig)
     getSelectedData(dbsConfig)
     addProperty(prop, dfTmp, selectedData)
+    assignCode(dbsConfig)
 """
 
+from rdkit.Chem import rdMolDescriptors
 import matplotlib.pyplot as plt
+from rdkit import Chem
 import pandas as pd
 import numpy as np
 import sys
@@ -23,6 +26,7 @@ import os
 from dbsRelation import getUnit
 import myDataStructure
 import myExceptions
+import family_utils
 import dbsSearch
 import plotData
 import utils
@@ -50,7 +54,7 @@ def manualSelection(dbsConfig):
     dbsEntries = dbs.getDbsEntries(dbsFileName)
 
     # get tables with data
-    properties = dbsConfig.getPropList()
+    properties = dbsConfig.getPropListToBePlotted()
     propCod = dbsConfig.getPropCod()
     tables = dbsSearch.readData(propCod)
 
@@ -555,3 +559,64 @@ def addProperty(prop, dfTmp, selectedData):
             selectedData.addPermittivity(data)
         else:
             raise myExceptions.PropertyNotImplemented('selectData::addProperty({})'.format(prop))
+
+
+def assignCode(dbsConfig):
+    """Assigns code to molecules with selected data.
+    1. Reads file that maps molecule code to SMILES (if it exists),
+    and assigns these code to molecules.
+    2. For the remaining molecules.
+
+    :param dbsConfig: (dbsConfiguration object) DBS configuration object.
+    :return:
+    """
+
+    allSelectedData = IO.openSelectedDataFile(dbsConfig)
+
+    fileName = dbsConfig.getOutFileName('codSmilesMap')
+    codSmilesMap = IO.readCodSmilesMap(fileName)
+
+    # List of already used molecule codes.
+    usedCodes = []
+
+    if codSmilesMap.shape[0] != 0:
+
+        # canonicalize SMILES strings.
+        for idx, row in codSmilesMap.iterrows():
+            smiles = row['smiles']
+            smiles = utils.getCanonicalSmiles(smiles)
+            codSmilesMap.loc[idx, 'smiles'] = smiles
+
+        # Add code from cod_smiles_map file.
+        for smiles in allSelectedData:
+            selectedData = allSelectedData[smiles]
+            row = codSmilesMap.loc[codSmilesMap['smiles'] == smiles]
+
+            if row.shape[0] != 0:
+                code = row['code'].values[0]
+                selectedData.code = code
+
+                usedCodes.append(code)
+
+    familyCode = dbsConfig.getFamilyCode()
+    family = family_utils.getFamily(familyCode)
+    letter = family.letter
+
+    # Define code for molecules without one yet.
+    for smiles in allSelectedData:
+        selectedData = allSelectedData[smiles]
+        code = selectedData.code
+        # print('{:6} {}'.format(code, smiles))
+
+        if not code:
+            rdKitMol = Chem.MolFromSmiles(smiles)
+            formula = rdMolDescriptors.CalcMolFormula(rdKitMol)
+            print(formula)
+
+            nC = family.get_num_of_carbons(formula)
+            nonC = family.get_num_of_other_atoms_without_H(formula)
+
+            code = utils.createCod(letter, nC, nonC, usedCodes)
+            selectedData.code = code
+
+    IO.writeSelectedDataToJson(dbsConfig, allSelectedData)

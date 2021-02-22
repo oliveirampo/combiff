@@ -11,6 +11,7 @@ class SelectedData:
 
     Attributes:
         smiles: () SMILES string.
+        code: (str) Molecule code.
         mlp: (str) Melting point.
         mlp_src: (str) Source of melting point.
         blp: (str) Boiling point.
@@ -32,6 +33,7 @@ class SelectedData:
         """
 
         self.smiles = smiles
+        self.code = ''
         self.mlp = ''
         self.mlp_src = ''
         self.blp = ''
@@ -61,9 +63,9 @@ class SelectedData:
         :return: (dict)
         """
 
-        data = {'__type__': 'SelectedData', 'smiles': self.smiles, 'mlp': self.mlp, 'mlp_src': self.mlp_src,
-                'blp': self.blp, 'blp_src': self.blp_src, 'tem_cri': self.tem_cri, 'tem_cri_src': self.tem_cri_src,
-                'eps': self.eps, 'eps_src': self.eps_src, 'prop': self.properties}
+        data = {'__type__': 'SelectedData', 'smiles': self.smiles, 'code': self.code, 'mlp': self.mlp,
+                'mlp_src': self.mlp_src, 'blp': self.blp, 'blp_src': self.blp_src, 'tem_cri': self.tem_cri,
+                'tem_cri_src': self.tem_cri_src, 'eps': self.eps, 'eps_src': self.eps_src, 'prop': self.properties}
 
         return data
 
@@ -322,6 +324,10 @@ def selectedDataDecoder(obj):
         smiles = obj['smiles']
         data = SelectedData(smiles)
 
+        code = ''
+        if 'code' in obj:
+            code = obj['code']
+
         mlp = obj['mlp']
         mlp_src = obj['mlp_src']
         blp = obj['blp']
@@ -331,6 +337,7 @@ def selectedDataDecoder(obj):
         eps = obj['eps']
         eps_src = obj['eps_src']
 
+        data.code = code
         data.mlp = mlp
         data.mlp_src = mlp_src
         data.blp = blp
