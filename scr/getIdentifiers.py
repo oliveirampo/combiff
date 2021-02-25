@@ -17,12 +17,12 @@ import sys
 import os
 import re
 
-from molecule import moleculeEncoder
-from molecule import moleculeDecoder
-from molecule import Molecule
-import myExceptions
-import utils
-import IO
+from .molecule import moleculeEncoder
+from .molecule import moleculeDecoder
+from .molecule import Molecule
+from . import myExceptions
+from . import utils
+from . import IO
 
 
 def run(dbsConfig):

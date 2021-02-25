@@ -22,8 +22,8 @@ import sys
 import os
 
 
-import myExceptions
-import dbs
+from . import myExceptions
+from . import dbs
 
 
 class dbsConfiguration:

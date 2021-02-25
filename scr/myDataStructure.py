@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-import selectData
+from . import selectData
 
 
 class SelectedData:
