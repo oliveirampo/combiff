@@ -4,10 +4,10 @@ import sys
 import os
 
 
-from . import dbsRelation
-from . import myExceptions
-from . import dbsIO
-from . import equation
+import dbsRelation
+import myExceptions
+import dbsIO
+import equation
 
 
 class abstractFactoryRelation(ABC):

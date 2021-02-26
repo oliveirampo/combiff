@@ -13,7 +13,7 @@ import pandas as pd
 import os
 
 
-from . import myExceptions
+import myExceptions
 
 
 class relationParser(ABC):

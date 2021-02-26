@@ -17,12 +17,16 @@ import sys
 import os
 import re
 
-from .molecule import moleculeEncoder
-from .molecule import moleculeDecoder
-from .molecule import Molecule
-from . import myExceptions
-from . import utils
-from . import IO
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+from molecule import moleculeEncoder
+from molecule import moleculeDecoder
+from molecule import Molecule
+import myExceptions
+import utils
+import IO
 
 
 def run(dbsConfig):

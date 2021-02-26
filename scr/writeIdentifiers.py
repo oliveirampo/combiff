@@ -10,10 +10,10 @@ import sys
 import os
 
 
-from .molecule import moleculeDecoder
-from . import myExceptions
-from . import utils
-from . import IO
+from molecule import moleculeDecoder
+import myExceptions
+import utils
+import IO
 
 
 def run():

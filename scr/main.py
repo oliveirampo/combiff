@@ -33,13 +33,13 @@ The tables with data from different sources are found in 'wrkDir/tmp/' directory
 
 import sys
 
-from . import myExceptions
-from . import getIdentifiers
-from . import writeIdentifiers
-from . import dbsSearch
-from . import selectData
-from . import plotData
-from . import IO
+import myExceptions
+import getIdentifiers
+import writeIdentifiers
+import dbsSearch
+import selectData
+import plotData
+import IO
 
 
 def main():

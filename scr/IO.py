@@ -18,10 +18,10 @@ import math
 import sys
 import os
 
-from .molecule import Molecule
-from . import myDataStructure
-from . import myExceptions
-from . import utils
+from molecule import Molecule
+import myDataStructure
+import myExceptions
+import utils
 
 
 def readFieFile(fileName):

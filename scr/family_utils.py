@@ -7,7 +7,7 @@ Methods:
 
 import sys
 
-from . import family
+import family
 
 
 def initFamilies():

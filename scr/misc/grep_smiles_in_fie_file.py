@@ -7,10 +7,8 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from scr import IO
-from scr import utils
-
-
+import IO
+import utils
 
 
 def main():
@@ -18,6 +16,7 @@ def main():
 
     :return:
     """
+    sys.exit('STOP')
 
     molListFile = sys.argv[1]
     fieFile = sys.argv[2]
