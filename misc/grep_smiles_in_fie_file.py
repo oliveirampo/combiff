@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import sys
 import os
 
@@ -31,10 +32,17 @@ def main():
 
     df = pd.merge(molList, isomers, on='smiles')
 
-    if df.shape[0] != molList.shape[0]:
-        sys.exit('ERROR: Some SMILES were not matched.')
-
     columns = ['nam', 'frm', 'smiles']
+    if df.shape[0] != molList.shape[0]:
+        print('ERROR: Some SMILES were not matched.')
+        # sys.exit('ERROR: Some SMILES were not matched.')
+
+        df = df[columns]
+        # show duplicates
+        duplicated_smiles = np.unique(df[df.duplicated(['smiles'], keep=False)]['smiles'])
+        for smiles in duplicated_smiles:
+            print(smiles)
+
     df.to_csv(outFile, columns=columns, index=False, header=False, sep='\t')
 
 
