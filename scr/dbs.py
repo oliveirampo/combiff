@@ -16,20 +16,23 @@ class abstractFactoryRelation(ABC):
     Attributes:
         _prop: (str) Property code.
         _eqn: (str) Code for equation in relation table.
+        _var: (str) Column name in table.
     Functions:
         createRelation()
         createParser()
         createEquations(tab)
     """
 
-    def __init__(self, prop, eqn):
+    def __init__(self, prop, var, eqn):
         """Constructs all the necessary attributes for this object.
 
         :param prop: (str) Property code.
+        :param var: (str) Column name in table.
         :param eqn: (str) Code for equation in relation table.
         """
 
         self._prop = prop
+        self._var = var
         self._eqn = eqn
 
     @abstractmethod
@@ -55,6 +58,10 @@ class abstractFactoryRelation(ABC):
     def eqn(self):
         return self._eqn
 
+    @property
+    def var(self):
+        return self._var
+
 
 class createRelationCompound(abstractFactoryRelation):
     """Implements factory to create specific relation.
@@ -76,7 +83,7 @@ class createRelationCompound(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -111,7 +118,7 @@ class createRelationDensity(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -152,7 +159,7 @@ class createRelationVaporizationEnthalpy(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -193,7 +200,7 @@ class createRelationVaporizationEnthalpyAtBoilingPoint(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -228,7 +235,7 @@ class createRelationBoilingPoint(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -262,7 +269,7 @@ class createRelationMeltingPoint(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -297,7 +304,7 @@ class createRelationCriticalTemperature(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -332,7 +339,7 @@ class createRelationVaporPressure(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -367,7 +374,7 @@ class createRelationSurfaceTension(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -409,7 +416,7 @@ class createRelationIsothermalCompressibility(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -445,7 +452,7 @@ class createRelationThermalExpansionCoefficient(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -487,7 +494,7 @@ class createRelationHeatCapacityAtConstantPressure(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -536,7 +543,7 @@ class createRelationPermittivity(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -572,7 +579,7 @@ class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
@@ -607,7 +614,7 @@ class createRelationViscosity(abstractFactoryRelation):
 
         self._parser = dbsIO.parserDefault(larsCode, rel, col)
 
-        super().__init__(prop, eqn)
+        super().__init__(prop, var, eqn)
 
     def getRelation(self):
         """Returns created DBS relation."""
