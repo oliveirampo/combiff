@@ -182,7 +182,13 @@ class createRelationVaporizationEnthalpy(abstractFactoryRelation):
         if self.eqn == '':
             return [equation.nullEquation(tab)]
         elif self.eqn == 'hvp_1':
-            return [equation.hvpEquation1(tab)]
+            equations = []
+
+            for i in range(tab.shape[0]):
+                newTab = tab.iloc[i].to_frame().T
+                equations.append(equation.hvpEquation1(newTab))
+
+            return equations
         else:
             raise myExceptions.EquationNotImplemented(type)
 
