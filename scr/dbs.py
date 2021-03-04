@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import pandas as pd
 import json
 import sys
 import os
@@ -133,7 +134,14 @@ class createRelationDensity(abstractFactoryRelation):
         if self.eqn == '':
             return [equation.nullEquation(tab)]
         elif self.eqn == 'dns_1':
-            return [equation.dnsEquation1(tab)]
+            equations = []
+
+            for i in range(tab.shape[0]):
+                newTab = tab.iloc[i].to_frame().T
+                equations.append(equation.dnsEquation1(newTab))
+
+            return equations
+
         else:
             typ = "\'\'".format(self.eqn)
             raise myExceptions.EquationNotImplemented(typ)
@@ -351,7 +359,13 @@ class createRelationVaporPressure(abstractFactoryRelation):
 
     def createEquations(self, tab):
         """Creates and returns list of equations."""
-        return [equation.pvpEquation1(tab)]
+        equations = []
+
+        for i in range(tab.shape[0]):
+            newTab = tab.iloc[i].to_frame().T
+            equations.append(equation.pvpEquation1(newTab))
+
+        return equations
 
 
 class createRelationSurfaceTension(abstractFactoryRelation):
