@@ -130,6 +130,11 @@ def checkProperty(col, data, propVar):
             elif '<' in val:
                 rm.append(i)
 
+            elif ',' in val:
+                val = val.replace(',', '.')
+                val = float(val[0])
+                data[i, col] = val
+
             else:
                 print(data[i, col])
                 raise myExceptions.WrongProperty(propVar, val, 'dbsRelation::checkProperty()')
