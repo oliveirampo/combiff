@@ -9,6 +9,7 @@ def getCanonicalSmiles(smiles):
         smiles: (str) Canonicalized SMILES string.
     """
 
+    # print(smiles)
     rdKitMol = Chem.MolFromSmiles(smiles)
 
     # could not convert smiles to molecule

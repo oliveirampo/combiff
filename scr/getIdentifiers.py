@@ -24,6 +24,7 @@ sys.path.append(parentdir)
 from molecule import moleculeEncoder
 from molecule import moleculeDecoder
 from molecule import Molecule
+import molecule
 import myExceptions
 import utils
 import IO
@@ -59,7 +60,6 @@ def run(dbsConfig):
     # molecules = IO.readFlsFile(flsFile, isomers)
     molecules = getMolecules(isomers)
 
-    print('Canonicalizing SMILES')
     canonicalizeSmiles(molecules)
     # this will take a while
     cidSmiles = IO.readCiDSmilesFile(cidSmilesFile)
@@ -106,10 +106,8 @@ def canonicalizeSmiles(molecules):
     :param molecules: (list) List of molecules.
     """
 
-    for mol in molecules:
-        smiles = mol.smiles
-        smiles = utils.getCanonicalSmiles(smiles)
-        mol.smiles = smiles
+    map(Molecule.getMolWithCanonicalSmiles, molecules)
+    return molecules
 
 
 def matchMol(cidSmiles, molecules, data, molDataFile):

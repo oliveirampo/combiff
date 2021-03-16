@@ -11,6 +11,8 @@ Methods:
 
 import json
 
+import utils
+
 
 class Molecule:
     """Molecule object.
@@ -77,6 +79,15 @@ class Molecule:
     def __str__(self):
         s = '{} {}'.format(self.enu_code, self.smiles)
         return s
+
+    @staticmethod
+    def getMolWithCanonicalSmiles(mol):
+        """Canonicalize smiles of molecule."""
+
+        smiles = mol.smiles
+        smiles = utils.getCanonicalSmiles(smiles)
+        mol.smiles = smiles
+        return mol
 
 
 class moleculeEncoder(json.JSONEncoder):

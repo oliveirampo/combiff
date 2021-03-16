@@ -50,49 +50,34 @@ def main():
             raise myExceptions.ArgError(2, len(sys.argv))
 
         job = sys.argv[1]
+        dbsConfigurationFile = '../inp/dbs.conf'
+        dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
 
         if job == '-getIdentifier':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             getIdentifiers.run(dbsConfig)
 
         elif job == '-writeIdentifier':
             writeIdentifiers.run()
 
         elif job == '-searchProp':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             dbsSearch.run(dbsConfig)
 
         elif job == '-selectData':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.manualSelection(dbsConfig)
 
         elif job == '-addSelectedData':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.getSelectedData(dbsConfig)
 
         elif job == '-addSelectedDataForProperty':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.getSelectedDataForProperty(dbsConfig)
 
         elif job == '-assignCode':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             selectData.assignCode(dbsConfig)
 
         elif job == '-plotData':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
             plotData.plotAll(dbsConfig)
 
         elif job == '-writeOutputFiles':
-            dbsConfigurationFile = '../inp/dbs.conf'
-            dbsConfig = dbsSearch.dbsConfiguration(dbsConfigurationFile)
-
             IO.writeMolDataFile(dbsConfig)
 
         else:

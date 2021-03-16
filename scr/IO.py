@@ -120,7 +120,7 @@ def readFlsFile_helper(pos, data):
         elif data[i][0] == 'FRAG':
             idx = data[i][1]
             frg = data[i][2]
-            frags .append([idx, frg])
+            frags.append([idx, frg])
         elif data[i][0] == 'NUMLINKS':
             num_links = data[i][1]
         elif data[i][0] == 'LINK':
@@ -138,14 +138,14 @@ def readCiDSmilesFile(fileName):
         (pandas DataFrame) Table with CIDs and SMILES strings.
     """
 
+    print('Reading PubChem file...')
     df = pd.read_csv(fileName, sep='\s+', header=None, names=['cid', 'smiles'], dtype={'cid': 'Int64', 'smiles': 'str'})
 
-    # canonicalize smiles
-    for idx, row in df.iterrows():
-        smiles = row['smiles']
-        smiles = utils.getCanonicalSmiles(smiles)
+    if 'canonic' in fileName:
+        return df
 
-        df.loc[idx, 'smiles'] = str(smiles)
+    print('Canonicalizing SMILES')
+    df['smiles'] = df['smiles'].apply(utils.getCanonicalSmiles)
 
     return df
 
@@ -256,12 +256,17 @@ def writeMolDataFile(dbsConfig):
                 epsSrc = selectedData.eps_src
                 eps, epsSrc = toString(eps, epsSrc, 'TODO')
 
+                if prop not in properties:
+                    continue
+
                 propPre = properties[prop].pre[0]
                 propTem = properties[prop].tem[0]
                 propVal = properties[prop].val[0]
 
-                out.write('{:6} {:2} {:6} {:6} {:6} {:8.2f} {:8} {}\n'
-                          .format(code, nC, propPre, propTem, eps, dnsVal, propVal, smiles))
+                dnsVal = float(dnsVal)
+
+                out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
+                          .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
 
 
 def organizeValues(prop1, prop2):
@@ -293,8 +298,8 @@ def organizeValues(prop1, prop2):
         j = 0
         while j < nProp2:
 
-            isPreClose = math.isclose(preProp1[i], preProp2[j], abs_tol=5.0)    # kPa
-            isTemClose = math.isclose(temProp1[i], temProp2[j], abs_tol=2.0)    # K
+            isPreClose = math.isclose(preProp1[i], preProp2[j], abs_tol=5.0)  # kPa
+            isTemClose = math.isclose(temProp1[i], temProp2[j], abs_tol=2.0)  # K
             if isPreClose:
 
                 if isTemClose:
@@ -341,8 +346,13 @@ def writeDnsHvpData(dbsConfig, allSelectedData):
 
             dnsVariable = dbsConfig.getVariable('density')
             hvpVariable = dbsConfig.getVariable('vaporizationEnthalpy')
-            dns = properties[dnsVariable]
-            hvp = properties[hvpVariable]
+
+            dns = myDataStructure.Property('dns', [], [], [], [], [], [])
+            hvp = myDataStructure.Property('hvp', [], [], [], [], [], [])
+            if dnsVariable in properties:
+                dns = properties[dnsVariable]
+            if hvpVariable in properties:
+                hvp = properties[hvpVariable]
 
             jobLetter = ord('a')
             pairIdx = organizeValues(dns, hvp)
@@ -405,6 +415,7 @@ def toString(val, src, replacement):
     """
 
     try:
+        val = float(val)
         val = '{:8.1f}'.format(val)
     except ValueError:
         val = '{:8}'.format(replacement)
@@ -439,6 +450,12 @@ def writeDnsHvpDataHelper(code, jobLetter, smiles, preDns, temDns, runDns, valDn
     :param outFile: (str) Output file with data.
     :param srcFile: (str) Output file with source.
     """
+
+    mlp = float(mlp)
+    blp = float(blp)
+    tem_cri = float(tem_cri)
+    valDns = float(valDns)
+    valHvp = float(valHvp)
 
     outFile.write('{:5}{} {:14} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:3} {:8.2f} {:6} {:6} {} {:>6}\n'
                   .format(code, chr(jobLetter), smiles, 1.0, preDns, temDns, runDns, valDns, runHvp, valHvp,

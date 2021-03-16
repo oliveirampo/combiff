@@ -493,13 +493,13 @@ def getSelectedData(dbsConfig):
     oldSelectedDataFileName = 'old_files/mol.src'
 
     molList = pd.read_csv(oldMolListFileName, sep='\s+',
-        names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles', 'old_cod', 'x', 'y', 'z'],
-        usecols=['cod', 'inchi', 'smiles'])
+                          names=['cod', 'frm', 'cas', 'nam', 'inchi', 'smiles', 'old_cod', 'x', 'y', 'z'],
+                          usecols=['cod', 'inchi', 'smiles'])
 
     srcData = pd.read_csv(oldSelectedDataFileName, sep='\s+',
-        names = ['cod', 'nam', 'cas', 'pre', 'tem', 'dns', 'dns_src', 'hvp', 'hvp_src',
-                 'mlp', 'mlp_src', 'blp', 'blp_src', 'tem_cri', 'tem_cri_src',
-                 'eps', 'eps_src', 'x', 'y', 'z'])
+                          names=['cod', 'nam', 'cas', 'pre', 'tem', 'dns', 'dns_src', 'hvp', 'hvp_src',
+                                 'mlp', 'mlp_src', 'blp', 'blp_src', 'tem_cri', 'tem_cri_src',
+                                 'eps', 'eps_src', 'x', 'y', 'z'])
 
     srcData['letter'] = srcData['cod'].str[-1]
     srcData['cod'] = srcData['cod'].str[:-1]
@@ -591,7 +591,7 @@ def addProperty(prop, dfTmp, selectedData):
     if src.shape[0] != 1:
         print('No unique {} src'.format(prop))
 
-    if val[0] != '%' and src[0] != '%' and val[0] != '-' and src[0] != '-':
+    if val[0] != '%' and src[0] != '%' and val[0] != '-':
         data = pd.DataFrame([[val[0], src[0]]], columns=['tem', 'larsCode'])
 
         if prop == 'mlp':
@@ -605,12 +605,15 @@ def addProperty(prop, dfTmp, selectedData):
         else:
             raise myExceptions.PropertyNotImplemented('selectData::addProperty({})'.format(prop))
 
+    # else:
+    #     TODO
+
 
 def assignCode(dbsConfig):
     """Assigns code to molecules with selected data.
     1. Reads file that maps molecule code to SMILES (if it exists),
     and assigns these code to molecules.
-    2. For the remaining molecules.
+    2. Create new code for the remaining molecules.
 
     :param dbsConfig: (dbsConfiguration object) DBS configuration object.
     :return:
@@ -619,7 +622,9 @@ def assignCode(dbsConfig):
     allSelectedData = IO.openSelectedDataFile(dbsConfig)
 
     fileName = dbsConfig.getOutFileName('codSmilesMap')
-    codSmilesMap = IO.readCodSmilesMap(fileName)
+    codSmilesMap = pd.DataFrame(columns=['code', 'smiles'])
+    if os.path.exists(fileName):
+        codSmilesMap = IO.readCodSmilesMap(fileName)
 
     # List of already used molecule codes.
     usedCodes = []
@@ -645,7 +650,6 @@ def assignCode(dbsConfig):
 
     familyCode = dbsConfig.getFamilyCode()
     family = family_utils.getFamily(familyCode)
-    letter = family.letter
 
     # Define code for molecules without one yet.
     for smiles in allSelectedData:
@@ -653,10 +657,12 @@ def assignCode(dbsConfig):
         code = selectedData.code
         # print('{:6} {}'.format(code, smiles))
 
-        if not code:
+        # if not code:
+        if True:
             rdKitMol = Chem.MolFromSmiles(smiles)
             formula = rdMolDescriptors.CalcMolFormula(rdKitMol)
-            print(formula)
+            letter = family.get_letter(smiles)
+            # print(formula)
 
             nC = family.get_num_of_carbons(formula)
             nonC = family.get_num_of_other_atoms_without_H(formula)

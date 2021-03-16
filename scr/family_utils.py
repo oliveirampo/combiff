@@ -18,6 +18,7 @@ def initFamilies():
         family.ALK(),
         family.ROH(),
         family.HAL(),
+        family.MIX(),
     ]
     return families
 

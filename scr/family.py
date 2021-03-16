@@ -1,4 +1,6 @@
+from rdkit import Chem
 from abc import ABC
+import numpy as np
 import re
 
 
@@ -25,6 +27,10 @@ class Family(ABC):
 
     def __str__(self):
         return '\n\t{}: {} - {}\n'.format(self.letter, self.cod, self.nam)
+
+    def get_letter(self, smiles):
+        """Returns letter associated to this Family."""
+        return self.letter
 
     @staticmethod
     def get_num_of_carbons(frm):
@@ -164,3 +170,98 @@ class HAL(Family):
         nam = 'halomethane'
 
         super(HAL, self).__init__(letter, cod, nam)
+
+
+class MIX(Family):
+    def __init__(self):
+        """Constructs all the necessary attributes for this object."""
+
+        letter = 'G'
+        cod = 'MIX'
+        nam = 'several_families'
+
+        super(MIX, self).__init__(letter, cod, nam)
+
+    def get_letter(self, smiles):
+        """Return letter depending on type of atoms."""
+
+        min_fg_list = ['F', 'Cl', 'Br', 'I',
+                       '[OD2]([#6;!$(C=O)])[#6;!$(C=O)]',  # 4  ROR
+                       '[CX3H2](=O)',                      # 5  HCOH
+                       '[CX3H1](=O)[#6]',                  # 6  RCOH
+                       '[#6][CX3](=O)[#6]',                # 7  RCOR
+                       '[$([#6][CX3](=O)[OX2H0][#6])]',    # 8  RCOOR
+                       '[CX3H1](=O)[OX2H0][#6]',           # 9  HCOOR
+                       '[#6;!$(C=O)][OX2H]',               # 10  ROH
+                       '[CX3](=O)[OX2H1]',                 # 11  RCOOH
+                       '[NX3;H2,H1,H0;!$(NC=O)]',          # 12 RN
+                       '[NX3][CX3](=[OX1])[#6]']           # 13 RCON
+
+        min_fg_mask = np.zeros(shape=(len(min_fg_list)))
+        import sys
+        # sys.exit('STOP')
+
+        mol = Chem.MolFromSmiles(smiles)
+
+        # check if smiles has no listed functional group
+        for i in range(len(min_fg_list)):
+            smarts = min_fg_list[i]
+
+            fg1 = Chem.MolFromSmarts(smarts)
+            matches = mol.GetSubstructMatches(fg1)
+
+            if matches:
+                min_fg_mask[i] += 1
+
+        nFG = np.count_nonzero(min_fg_mask)
+
+        # ALK
+        if nFG == 0:
+            return 'A'
+
+        elif nFG > 1:
+            return 'S'
+
+        elif min_fg_mask[0]:
+            return 'F'
+
+        elif min_fg_mask[1]:
+            return 'C'
+
+        elif min_fg_mask[2]:
+            return 'B'
+
+        elif min_fg_mask[3]:
+            return 'I'
+
+        elif min_fg_mask[4]:
+            return 'O'
+
+        elif min_fg_mask[5]:
+            return 'A'
+
+        elif min_fg_mask[6]:
+            return 'A'
+
+        elif min_fg_mask[7]:
+            return 'K'
+
+        elif min_fg_mask[8]:
+            return 'E'
+
+        elif min_fg_mask[9]:
+            return 'E'
+
+        elif min_fg_mask[10]:
+            return 'L'
+
+        elif min_fg_mask[11]:
+            return 'D'
+
+        elif min_fg_mask[12]:
+            return 'N'
+
+        elif min_fg_mask[13]:
+            return 'M'
+
+        return self.letter
