@@ -242,6 +242,8 @@ def run(dbsConfig):
     # 00_file.lst
     molListFile = sys.argv[2]
     # molList = np.genfromtxt(molListFile, dtype=None, encoding='utf-8')
+    if not os.path.exists(molListFile):
+        raise myExceptions.NoFile(molListFile)
     molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['frm', 'cas', 'nam', 'inchi', 'smiles'])
 
     dbsFileName = dbsConfig.getDbsFileName()
