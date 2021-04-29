@@ -575,7 +575,17 @@ class createRelationPermittivity(abstractFactoryRelation):
 
     def createEquations(self, tab):
         """Creates and returns list of equations."""
-        return [equation.nullEquation(tab)]
+        if self.eqn == '':
+            return [equation.nullEquation(tab)]
+        elif self.eqn == 'eps_1':
+            a = tab['a_eps'].values[0]
+            if a == '%':
+                return [equation.nullEquation(tab)]
+
+            return [equation.epsEquation1(tab)]
+        else:
+            typ = "\'\'".format(self.eqn)
+            raise myExceptions.EquationNotImplemented(typ)
 
 
 class createRelationSelfDiffusionCoefficient(abstractFactoryRelation):

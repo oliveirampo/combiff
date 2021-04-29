@@ -153,6 +153,12 @@ def plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, proper
                         v = val[i]
                         f = fid[i]
                         m = met[i]
+
+                        if f == '%':
+                            f = ''
+                        if m == '%':
+                            m = ''
+
                         plotData.addCode(t, v, f)
                         plotData.addCode(t, v, m)
 
@@ -170,7 +176,11 @@ def plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, proper
                         plotData.plotPoint(X, Y, larsCode, marker, color, linewidth=1.0)
                         plotData.saveDataPts(X, Y, larsCode, fid, met, x_values, y_values, src_values, fid_values,
                                              met_values)
-                        plotData.addCode(X[0], Y[0], fid[0])
+
+                        f = fid[0]
+                        if f == '%':
+                            f = ''
+                        plotData.addCode(X[0], Y[0], f)
 
                         for x in X: pre_values.append(defaultPressure)
 

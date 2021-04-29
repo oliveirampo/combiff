@@ -617,3 +617,57 @@ class hcpEquation3(Equation):
         val = val + f * math.pow(tr, 3)
         val = val * 8.314472
         return val
+
+
+class epsEquation1(Equation):
+    """Permittivity equation object."""
+
+    def __init__(self, tab):
+        """Constructs all the necessary attributes for this object.
+
+        :param tab: (pandas DataFrame) Table with coefficients for equation.
+        """
+
+        a = tab['a_eps'].values[0]
+        b = tab['b_eps'].values[0]
+        c = tab['c_eps'].values[0]
+        d = tab['d_eps'].values[0]
+        tem_min = tab['tem_min']
+        tem_max = tab['tem_max']
+
+        fid = ['%']
+
+        if c == '%':
+            c = 0
+        if d == '%':
+            d = 0
+
+        a = float(a)
+        b = float(b)
+        c = float(c)
+        d = float(d)
+        tem_min = float(tem_min)
+        tem_max = float(tem_max)
+
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.tem_min = tem_min
+        self.tem_max = tem_max
+        self.fid = fid
+        # sys.exit(123)
+
+    def compute(self, tem):
+        """Returns the value of the property at the given temperature.
+
+        :param tem: (float) Temperature.
+        :return: (float)
+        """
+
+        a = self.a
+        b = self.b
+        c = self.c
+        d = self.d
+        val = a + b * tem + c * tem * tem + d * tem * tem * tem
+        return val
