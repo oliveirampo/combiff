@@ -132,6 +132,15 @@
       "var": "mlp",
       "prop_convert": "273.15",
       "col": "@col rec cid phys mlp mlp_com blp blp_com pre_blp_bis blp_bis tem_dns_ref pre_dns_ref dns_ref dns_com tem_nD pre_nD nD tem_aq_sol aq_sol vp sol pid"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps_ref",
+      "tem": "tem_ref",
+      "eq": "eps_eq",
+      "col": "@col rec cid tem_ref eps_ref a_eps b_eps c_eps d_eps tem_min tem_max pid",
+      "marker": "^",
+      "color": "red"
     }
   },
   "FR06.6": {
@@ -222,7 +231,6 @@
     "diffus": {
       "rel": "self_dif",
       "var": "self_dif",
-      "pre": "pre",
       "pre": "pre",
       "col": "@col rec cid tem pre self_dif phase ref pid",
       "marker": "^",
@@ -664,6 +672,14 @@
       "col": "@col rec cid tem hcp rid pid",
       "marker": "^",
       "color": "blue"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps",
+      "tem": "tem",
+      "col": "@col rec cid tem eps rid pid",
+      "marker": "^",
+      "color": "blue"
     }
   },
   "NI18.3": {
@@ -717,6 +733,16 @@
       "tem": "tem",
       "pre": "pre",
       "col": "@col rec cid tem pre self_dif err phase ref fil pfn",
+      "marker": "^",
+      "color": "navy"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps",
+      "tem": "tem",
+      "pre": "pre",
+      "pre_convert": "100.0",
+      "col": "@col rec cid fre tem pre eps err phase ref fil pfn",
       "marker": "^",
       "color": "navy"
     }
