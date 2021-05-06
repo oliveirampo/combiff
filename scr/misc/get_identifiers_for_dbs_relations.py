@@ -15,21 +15,26 @@ import dbs
 
 
 def search_identifiers(larsCode, dfTable, path):
-    if larsCode == 'FR06.6':
-        search_identifiers_FR06_6(larsCode, dfTable, path)
-
-
-def search_identifiers_FR06_6(larsCode, dfTable, path):
     """Iterate though chunks of 1000 rows and search for identifier in PubChem"""
 
+    if larsCode not in ['FR06.6', 'SP18.1']:
+        return
+
+    print(larsCode)
     count = 0
 
     # add new columns of identifiers
     dfTable['inchi'] = '%'
     dfTable['smiles'] = '%'
 
+    if 'cas' not in dfTable.columns:
+        dfTable['cas'] = '%'
+    if 'frm' not in dfTable.columns:
+        dfTable['frm'] = '%'
+
     file_name = '{}2/{}_{}.tmp'.format(path, larsCode, 'cpd')
     columns_to_keep = ['cid', 'nam', 'frm', 'cas', 'inchi', 'smiles']
+
     dfTable.to_csv(file_name, columns=columns_to_keep, sep=' ', index=None)
 
     for file_count, dfTable in enumerate(pd.read_csv(file_name, sep='\s+', chunksize=1000)):
@@ -64,10 +69,11 @@ def search_identifiers_FR06_6(larsCode, dfTable, path):
                 if cas != mol_cas:
                     sys.exit('{} != {}'.format(cas, mol_cas))
 
-            formula_match = getIdentifiers.match_formula(formula, mol_formula)
-            if not formula_match:
-                print('{} != {}'.format(formula, mol_formula))
-                continue
+            if formula != '%':
+                formula_match = getIdentifiers.match_formula(formula, mol_formula)
+                if not formula_match:
+                    print('{} != {}'.format(formula, mol_formula))
+                    continue
 
             if not mol_cas:
                 mol_cas = '%'
