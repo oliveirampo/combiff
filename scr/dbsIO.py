@@ -88,7 +88,8 @@ class parserDefault(relationParser):
             raise myExceptions.NoFile(fileName)
 
         with open(fileName) as dbsFile:
-            lines = [row.strip().lower().split() for row in dbsFile.readlines()]
+            lines = [row.strip().split() for row in dbsFile.readlines()]
+            # lines = [row.strip().lower().split() for row in dbsFile.readlines()]
 
         dfTable = pd.DataFrame()
 
