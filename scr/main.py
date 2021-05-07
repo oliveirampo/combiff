@@ -62,6 +62,10 @@ def main():
         elif job == '-searchProp':
             dbsSearch.run(dbsConfig)
 
+        elif job == '-searchPropAlternative':
+            alternative_directory = 'tmp2'
+            dbsSearch.runAlternative(dbsConfig, alternative_directory)
+
         elif job == '-selectData':
             selectData.manualSelection(dbsConfig)
 

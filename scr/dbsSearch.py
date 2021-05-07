@@ -22,7 +22,9 @@ import sys
 import os
 
 
+import getIdentifiers
 import myExceptions
+import dbsSearch
 import dbs
 
 
@@ -224,6 +226,11 @@ class dbsConfiguration:
         return simDir
 
 
+def read_mol_list(file_name):
+    molList = pd.read_csv(file_name, sep='\s+', header=None, names=['frm', 'cas', 'nam', 'inchi', 'smiles'])
+    return molList
+
+
 def run(dbsConfig):
     """Get identifiers and all available data for a given molecule in DBS
     and save data to data/ directory.
@@ -244,7 +251,7 @@ def run(dbsConfig):
     # molList = np.genfromtxt(molListFile, dtype=None, encoding='utf-8')
     if not os.path.exists(molListFile):
         raise myExceptions.NoFile(molListFile)
-    molList = pd.read_csv(molListFile, sep='\s+', header=None, names=['frm', 'cas', 'nam', 'inchi', 'smiles'])
+    molList = read_mol_list(molListFile)
 
     dbsFileName = dbsConfig.getDbsFileName()
     dbsEntries = dbs.getDbsEntries(dbsFileName)
@@ -252,7 +259,8 @@ def run(dbsConfig):
     print('Getting Identifiers')
     path = dbsConfig.getPath()
     molList = getCids(dbsEntries, molList, path)
-    # getCidsofSynonyms(dbsEntries, molList)
+
+    getCidsofSynonyms(dbsConfig, dbsEntries, molList, path)
 
     print('Getting Data')
     propCod = dbsConfig.getPropCod()
@@ -342,33 +350,54 @@ def mergeByName(larsCode, molList, dfTable):
     return df
 
 
-# TODO - to be finished
-def getCidsofSynonyms(dbsEntries, molList):
+def getCidsofSynonyms(dbsConfig, dbsEntries, molList, path):
     """Finds synonyms and adds their CIDs from DBS.
 
     :param dbsEntries: (dict) DBS entries. One for each LARS code.
     :param molList: (pandas DataFrame) Table with molecules and identifiers.
     """
 
-    # factory = dbs.dbsEntry.getFactory('cpd')
+    propCod = dbsConfig.getPropCod()
+    relations = get_relations(propCod)
 
-    for larsCode in dbsEntries:
-        # parser = factory.createParser()
-        # compoundRelation = dbsEntries[larsCode].getCompoundRelation()
-        # dfTable = parser.readRelation(larsCode, compoundRelation)
+    for rel in molList.columns:
+        if rel.startswith('nam_'):
+            larsCode = rel.split('_')[-1]
 
-        # match by name from cas match
-        for idx, row in molList.iterrows():
-            cid_cas = row['cid_cas_' + larsCode]
-            cid_cas = str(cid_cas)
+            factory = dbsEntries[larsCode].getFactory('cpd')
+            parser = factory.getParser()
+            dfTable = parser.readRelation(path)
 
-            if cid_cas == 'nan':
-                cid_nam = row['cid_nam_' + larsCode]
-                cid_nam = str(cid_nam)
+            dfTable = dfTable[dfTable['nam'] != '%'][['cid', 'nam']]
+            dfTable.columns = ['cid', 'synonym']
 
-                if cid_nam == 'nan':
-                    print('TODO: Search for more identifiers using alternative names found.')
-                    sys.exit(666)
+            molList = pd.merge(molList, dfTable, left_on='nam', right_on='synonym', how='left')
+
+            result = molList[molList['cid'].notnull()]
+
+            if result.shape[0] == 0:
+                molList = molList.drop(columns=['cid', 'synonym'], axis=1)
+
+            else:
+                for idx, row in molList[molList['cid'].notnull()].iterrows():
+                    cid = row['cid']
+                    nam_col = 'cid_nam_' + larsCode
+                    cas_col = 'cid_cas_' + larsCode
+
+                    # Check if cid is already in table
+                    # if not add to new column
+                    saved_cid = molList.loc[idx, cas_col]
+                    if saved_cid != cid:
+                        if nam_col not in molList.columns:
+                            molList[nam_col] = ''
+                            molList.loc[idx, nam_col] = cid
+                            print('\t', cid)
+                        else:
+                            sys.exit('TODO: add matches.')
+
+                molList = molList.drop(columns=['cid', 'synonym'], axis=1)
+
+    # sys.exit('STOP')
 
 
 def getData(dbsEntries, molList, path, propCod):
@@ -401,7 +430,14 @@ def getData(dbsEntries, molList, path, propCod):
             # there will be lots of repeated data
             cid_options = [col for col in columns if col.startswith('cid_') and col.endswith(larsCod)]
             for cid in cid_options:
-                tab = pd.merge(molList, dfTable, how='left', left_on=cid, right_on='cid')
+
+                # remove unnecessary columns
+                keep_columns = ['frm', 'cas', 'nam', 'inchi', 'smiles']
+                for col in columns:
+                    if larsCod in col:
+                        keep_columns.append(col)
+
+                tab = pd.merge(molList[keep_columns], dfTable, how='left', left_on=cid, right_on='cid')
                 tab = tab.dropna(subset=[cid])
 
                 tab = parser.removeEmptyValues(factory.var, tab)
@@ -480,3 +516,82 @@ def readData(propCod):
             tables[prop][larsCod] = tab
 
     return tables
+
+
+def runAlternative(dbsConfig, alternative_directory):
+    molListFile = sys.argv[2]
+    if not os.path.exists(molListFile):
+        raise myExceptions.NoFile(molListFile)
+    molList = read_mol_list(molListFile)
+
+    dbsFileName = dbsConfig.getDbsFileName()
+    dbsEntries = dbs.getDbsEntries(dbsFileName)
+
+    print('Getting Identifiers')
+    path = dbsConfig.getPath()
+    molList = getCids(dbsEntries, molList, path)
+
+    propCod = dbsConfig.getPropCod()
+    relations = get_relations(propCod)
+
+    for larsCode in relations:
+        file_name = '../{}/{}_cpd.rel'.format(alternative_directory, larsCode)
+        if os.path.exists(file_name):
+            # print(file_name)
+            alternative_data = pd.read_csv(file_name, sep='\s+')
+
+            # Merge by smiles
+            cid_smiles_col = 'cid_smiles_{}'.format(larsCode)
+            current_table = alternative_data.loc[alternative_data['smiles'] != '%'][['cid', 'smiles']]
+            current_table.columns = [cid_smiles_col, 'smiles']
+            molList = pd.merge(molList, current_table, how='left', on='smiles')
+
+            molList[cid_smiles_col] = molList[cid_smiles_col].str.lower()
+
+            # check for duplicated columns
+            if cid_smiles_col + '_x' in molList.columns:
+                sys.exit('TODO: Duplicated columns for smiles')
+
+            # Merge by CAS
+            cid_cas_col = 'cid_cas_{}'.format(larsCode)
+            current_table = alternative_data.loc[alternative_data['cas'] != '%'][['cid', 'cas']]
+            current_table.columns = [cid_cas_col, 'cas']
+            molList = pd.merge(molList, current_table, how='left', on='cas')
+
+            # check for duplicated columns
+            if cid_cas_col + '_x' in molList.columns:
+                df_tmp = molList[molList[cid_cas_col + '_y'].notnull()]
+
+                if df_tmp.shape[0] == 0:
+                    molList = molList.drop(columns=[cid_cas_col + '_y'], axis=1)
+
+                    columns = molList.columns.values
+                    for i, col in enumerate(columns):
+                        if col == cid_cas_col + '_x':
+                            columns[i] = cid_cas_col
+
+                    molList.columns = columns
+
+                else:
+                    # print(file_name)
+                    # print(molList[[cid_cas_col + '_x', cid_cas_col + '_y']].head(2))
+                    # print(df_tmp[[cid_cas_col + '_x', cid_cas_col + '_y']].head(2))
+                    sys.exit('TODO: Duplicated columns for CAS')
+
+            # sys.exit('STOP')
+
+    print('Getting Data')
+    propCod = dbsConfig.getPropCod()
+    tables = getData(dbsEntries, molList, path, propCod)
+
+    print('Writing Data')
+    writeData(tables)
+
+
+def get_relations(propCod):
+    relations = []
+    for prop in propCod:
+        for rel in propCod[prop]:
+            relations.append(rel)
+    relations = list(set(relations))
+    return relations

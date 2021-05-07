@@ -690,6 +690,16 @@
       "var": "cid",
       "col": "@col rec cid nam frm cas smi ich ick tde_id1 tde_id2 fil pid"
     },
+    "dns": {
+      "rel": "dns",
+      "var": "dns",
+      "tem": "tem",
+      "pre": "pre",
+      "prop_convert": "100",
+      "col": "@col rec cid tem pre dns err phase ref fil pfn",
+      "marker": "^",
+      "color": "navy"
+    },
     "gam": {
       "rel": "gam",
       "var": "gam",
