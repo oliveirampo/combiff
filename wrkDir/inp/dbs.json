@@ -747,22 +747,6 @@
       "color": "navy"
     }
   },
-  "GH16.1": {
-    "__type__": "dbsEntry",
-    "larsCode": "GH16.1",
-    "cpd": {
-      "rel": "cpd",
-      "var": "cid",
-      "col": "@col rec cid nam frm cas pid"
-    },
-    "hcp": {
-      "rel": "hcp",
-      "var": "hcp",
-      "col": "@col rec cid hcp hcp_err rid pid",
-      "marker": ".",
-      "color": "magenta"
-    }
-  },
   "ZA10.2": {
     "__type__": "dbsEntry",
     "larsCode": "ZA10.2",
