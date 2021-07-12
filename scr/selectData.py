@@ -551,7 +551,7 @@ def getSelectedData(dbsConfig):
         data = dfTmp[dfTmp['dns'].astype(str) != '%']
         data = data[data['dns'].astype(str) != '-']
         if data.shape[0] != 0:
-            pre = data['pre'].values
+            pre = data['pre'].values * 100.00
             tem = data['tem'].values
             dns = data['dns'].values
             src = data['dns_src'].values
@@ -566,7 +566,7 @@ def getSelectedData(dbsConfig):
         data = dfTmp[dfTmp['hvp'].astype(str) != '%']
         data = data[data['hvp'].astype(str) != '-']
         if data.shape[0] != 0:
-            pre = data['pre'].values
+            pre = data['pre'].values * 100.00
             tem = data['tem'].values
             hvp = data['hvp'].values
             src = data['hvp_src'].values

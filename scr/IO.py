@@ -36,6 +36,10 @@ def readFieFile(fileName):
         raise myExceptions.NoFile(fileName)
     # df = pd.read_csv(fileName, sep='\s+', comment='#', names=['nam', 'frm', 'smiles'])
     df = pd.read_csv(fileName, sep='\s+', names=['nam', 'frm', 'smiles'])
+
+    df = df[~df['nam'].str.startswith('#')]
+    df.reset_index(inplace=True, drop=True)
+
     return df
 
 

@@ -9,6 +9,9 @@ def getCanonicalSmiles(smiles):
         smiles: (str) Canonicalized SMILES string.
     """
 
+    if smiles == '%':
+        return smiles
+
     # print(smiles)
     rdKitMol = Chem.MolFromSmiles(smiles)
 
