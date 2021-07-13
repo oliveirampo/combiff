@@ -43,7 +43,7 @@ def readFieFile(fileName):
     return df
 
 
-def readFlsFile(fileName, isomers):
+def readFlsFile_old(fileName, isomers):
     """Reads molecule file (fls file).
 
     :param fileName: (str) File name.
@@ -91,6 +91,36 @@ def readFlsFile(fileName, isomers):
             mol.code = iso.nam.iloc[0]
 
             molecules.append(mol)
+
+    return molecules
+
+
+def readFlsFile(fileName):
+    """Reads molecule file (fls file).
+
+    :param fileName: (str) File name.
+    :return:
+        molecules: (dict) Map of enu code to molecule.
+    """
+
+    with open(fileName, 'r') as f:
+        lines = f.readlines()
+
+    lines = [row.strip().split() for row in lines]
+
+    molecules = {}
+    for i in range(len(lines)):
+        if not lines[i]:
+            continue
+
+        if lines[i][0][0] == '#':
+            continue
+
+        if lines[i][0] == 'NEWMOLECULE':
+            pos = i + 1
+            mol = readFlsFile_helper(pos, lines)
+
+            molecules[mol.smiles] = mol
 
     return molecules
 
@@ -470,3 +500,49 @@ def writeDnsHvpDataHelper(code, jobLetter, smiles, preDns, temDns, runDns, valDn
                   '{:8} {:6} {:8} {} {:8}\n'
                   .format(code, chr(jobLetter), smiles, 1.0, preDns, temDns, runDns, valDns, srcDns, runHvp,
                           valHvp, srcHvp, mlp, mlpSrc, blp, blpSrc, tem_cri, tem_criSrc, eps, epsSrc))
+
+
+def writeMolecueFile_fls(dbsConfig):
+    inpFileName = dbsConfig.getOutFileName('inpMoleculeFile')
+    outFileName = dbsConfig.getOutFileName('outMoleculeFile')
+    fileExtension = outFileName.split('.')[-1]
+
+    if fileExtension == 'fls':
+        molecules = readFlsFile(inpFileName)
+
+    else:
+        sys.exit('File extension not supported: {}'.format(fileExtension))
+
+    # get selected molecules
+    selected_molecules = {}
+
+    allSelectedData = openSelectedDataFile(dbsConfig)
+    for smiles in allSelectedData:
+        selected_molecules[smiles] = molecules[smiles]
+
+    if fileExtension == 'fls':
+        writeFLS(selected_molecules, outFileName)
+
+
+def writeFLS(data, fileName):
+    with open(fileName, 'w') as out:
+        for smiles in data:
+            out.write('#\nNEWMOLECULE\n#\n')
+
+            mol = data[smiles]
+            out.write('\tNAME\t{}\n'.format(mol.smiles))
+            out.write('\tCODE\t{}\n'.format(mol.code))
+            out.write('\tCAS\t******\n'.format(mol.cas))
+
+            out.write('\tNUMFRAGS\t{}\n'.format(mol.num_frags))
+            out.write('\t#\tidx\tfrg\n')
+            for idx, frag in mol.frags:
+                out.write('\tFRAG\t{}\t{}\n'.format(idx, frag))
+
+            out.write('\tNUMLINKS\t{}\n'.format(mol.num_links))
+            if mol.num_links != 0:
+                out.write('\t#\tfrg1\tfrg2\tlnkatms\n')
+                for frg_1, frg_2, lnk in mol.links:
+                    out.write('\tLINK\t{}\t{}\t{}\n'.format(frg_1, frg_2, lnk))
+
+            out.write('#\nENDMOLECULE\n#\n')

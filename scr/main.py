@@ -84,6 +84,9 @@ def main():
         elif job == '-writeOutputFiles':
             IO.writeMolDataFile(dbsConfig)
 
+        elif job == '-saveMoleculeFile':
+            IO.writeMolecueFile_fls(dbsConfig)
+
         else:
             print('Option not implemented: {}'.format(job))
 
