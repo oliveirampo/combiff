@@ -113,6 +113,17 @@ def readFlsFile(fileName):
         if not lines[i]:
             continue
 
+        if lines[i][0] == '#':
+
+            # couldn't find a decomposition
+            if len(lines[i]) > 2 and lines[i][1] == "couldn\'t":
+                smiles = lines[i][6]
+                mol = Molecule(smiles, '', '', '', 0, [], 0, '')
+                molecules[smiles] = mol
+
+            else:
+                continue
+
         if lines[i][0][0] == '#':
             continue
 
@@ -527,22 +538,27 @@ def writeMolecueFile_fls(dbsConfig):
 def writeFLS(data, fileName):
     with open(fileName, 'w') as out:
         for smiles in data:
-            out.write('#\nNEWMOLECULE\n#\n')
-
             mol = data[smiles]
-            out.write('\tNAME\t{}\n'.format(mol.smiles))
-            out.write('\tCODE\t{}\n'.format(mol.code))
-            out.write('\tCAS\t******\n'.format(mol.cas))
 
-            out.write('\tNUMFRAGS\t{}\n'.format(mol.num_frags))
-            out.write('\t#\tidx\tfrg\n')
-            for idx, frag in mol.frags:
-                out.write('\tFRAG\t{}\t{}\n'.format(idx, frag))
+            if mol.num_frags == 0:
+                out.write("# couldn't find a decomposition for {} with the given fragments\n#\n".format(smiles))
 
-            out.write('\tNUMLINKS\t{}\n'.format(mol.num_links))
-            if mol.num_links != 0:
-                out.write('\t#\tfrg1\tfrg2\tlnkatms\n')
-                for frg_1, frg_2, lnk in mol.links:
-                    out.write('\tLINK\t{}\t{}\t{}\n'.format(frg_1, frg_2, lnk))
+            else:
+                out.write('#\nNEWMOLECULE\n#\n')
 
-            out.write('#\nENDMOLECULE\n#\n')
+                out.write('\tNAME\t{}\n'.format(mol.smiles))
+                out.write('\tCODE\t{}\n'.format(mol.code))
+                out.write('\tCAS\t******\n'.format(mol.cas))
+
+                out.write('\tNUMFRAGS\t{}\n'.format(mol.num_frags))
+                out.write('\t#\tidx\tfrg\n')
+                for idx, frag in mol.frags:
+                    out.write('\tFRAG\t{}\t{}\n'.format(idx, frag))
+
+                out.write('\tNUMLINKS\t{}\n'.format(mol.num_links))
+                if mol.num_links != 0:
+                    out.write('\t#\tfrg1\tfrg2\tlnkatms\n')
+                    for frg_1, frg_2, lnk in mol.links:
+                        out.write('\tLINK\t{}\t{}\t{}\n'.format(frg_1, frg_2, lnk))
+
+                out.write('#\nENDMOLECULE\n#\n')
