@@ -564,7 +564,7 @@ def writeDnsHvpDataHelper(code, jobLetter, smiles, preDns, temDns, runDns, valDn
                           valHvp, srcHvp, mlp, mlpSrc, blp, blpSrc, tem_cri, tem_criSrc, eps, epsSrc))
 
 
-def writeMolecueFile_fls(dbsConfig):
+def write_selected_molecule_file(dbsConfig):
     inpFileName = dbsConfig.getOutFileName('inpMoleculeFile')
     outFileName = dbsConfig.getOutFileName('outMoleculeFile')
     fileExtension = outFileName.split('.')[-1]
@@ -588,7 +588,7 @@ def writeMolecueFile_fls(dbsConfig):
     if fileExtension == 'fls':
         write_fls(selected_molecules, outFileName)
     elif fileExtension == 'mtb':
-        write_mtb_file(title_block, molecules, outFileName)
+        write_mtb_file(title_block, selected_molecules, outFileName)
 
 
 def write_fls(data, file_name):
