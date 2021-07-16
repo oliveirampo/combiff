@@ -100,7 +100,7 @@ def readFlsFile(fileName):
 
     :param fileName: (str) File name.
     :return:
-        molecules: (dict) Map of enu code to molecule.
+        molecules: (dict) Map of smiles to molecule.
     """
 
     with open(fileName, 'r') as f:
@@ -174,6 +174,57 @@ def readFlsFile_helper(pos, data):
             frg_2 = data[i][2]
             lnk = data[i][3]
             links.append([frg_1, frg_2, lnk])
+
+
+def read_mtb_file(fileName):
+    """Reads MTB file.
+
+    :param fileName: (str) File name.
+    :return:
+        molecules: (dict) Map of smiles to molecule
+    """
+
+    with open(fileName, 'r') as f:
+        lines = f.readlines()
+
+    i = 0
+    molecules = {}
+    while i < len(lines):
+        row = lines[i]
+
+        if row.startswith('TITLE'):
+            title_block = lines[:9]
+            i = 9
+            if title_block[-1].strip() != 'END':
+                sys.exit('TITLE block is not correct.')
+
+        elif row.startswith('MTBUILDBLSOLUTE'):
+            i, smiles, mol_block = read_mtb_file_helper(i, lines)
+            molecules[smiles] = mol_block
+
+        else:
+            sys.exit('Beginning of row not supported: {}'.format(row))
+
+    return title_block, molecules
+
+
+def read_mtb_file_helper(i, lines):
+    j = i
+    data = []
+
+    smiles = lines[i + 1].split()[-1]
+
+    while j < len(lines):
+        row = lines[j]
+
+        if row.startswith('END'):
+            i = j + 1
+            j = len(lines)
+
+        data.append(row)
+        j += 1
+
+    return i, smiles, data
 
 
 def readCiDSmilesFile(fileName):
@@ -521,6 +572,9 @@ def writeMolecueFile_fls(dbsConfig):
     if fileExtension == 'fls':
         molecules = readFlsFile(inpFileName)
 
+    elif fileExtension == 'mtb':
+        title_block, molecules = read_mtb_file(inpFileName)
+
     else:
         sys.exit('File extension not supported: {}'.format(fileExtension))
 
@@ -532,11 +586,14 @@ def writeMolecueFile_fls(dbsConfig):
         selected_molecules[smiles] = molecules[smiles]
 
     if fileExtension == 'fls':
-        writeFLS(selected_molecules, outFileName)
+        write_fls(selected_molecules, outFileName)
+    elif fileExtension == 'mtb':
+        write_mtb_file(title_block, molecules, outFileName)
 
 
-def writeFLS(data, fileName):
-    with open(fileName, 'w') as out:
+def write_fls(data, file_name):
+    """Write molecule file (file.mtb)"""
+    with open(file_name, 'w') as out:
         for smiles in data:
             mol = data[smiles]
 
@@ -562,3 +619,21 @@ def writeFLS(data, fileName):
                         out.write('\tLINK\t{}\t{}\t{}\n'.format(frg_1, frg_2, lnk))
 
                 out.write('#\nENDMOLECULE\n#\n')
+
+
+def write_mtb_file(title_block, data, file_name):
+    """Write mtb file
+
+    :param title_block: (arr) Title block of MTB file.
+    :param data: (arr) MTBUILDBLSOLUTE blocks of data
+    :param file_name: (str)
+    """
+
+    with open(file_name, 'w') as out:
+        for row in title_block:
+            out.write(row)
+
+        for smiles in data:
+            mol_block = data[smiles]
+            for row in mol_block:
+                out.write(row)
