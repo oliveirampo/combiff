@@ -21,13 +21,13 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from molecule import moleculeEncoder
-from molecule import moleculeDecoder
-from molecule import Molecule
-import molecule
-import myExceptions
-import utils
-import IO
+from scr.molecule import moleculeEncoder
+from scr.molecule import moleculeDecoder
+from scr.molecule import Molecule
+from scr import molecule
+from scr import myExceptions
+from scr import utils
+from scr import IO
 
 
 def run(dbsConfig):

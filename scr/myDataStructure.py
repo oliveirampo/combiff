@@ -3,7 +3,8 @@ import numpy as np
 import json
 
 
-import selectData
+# import selectData
+from scr import selectData
 
 
 class SelectedData:

@@ -23,15 +23,24 @@ import numpy as np
 import sys
 import os
 
-from dbsRelation import getUnit
-import myDataStructure
-import myExceptions
-import family_utils
-import dbsSearch
-import plotData
-import utils
-import dbs
-import IO
+# from dbsRelation import getUnit
+# import myDataStructure
+# import myExceptions
+# import family_utils
+# import dbsSearch
+# import plotData
+# import utils
+# import dbs
+# import IO
+from scr.dbsRelation import getUnit
+from scr import myDataStructure
+from scr import myExceptions
+from scr import family_utils
+from scr import dbsSearch
+from scr import plotData
+from scr import utils
+from scr import dbs
+from scr import IO
 
 
 def manualSelection(dbsConfig):
@@ -622,7 +631,7 @@ def addProperty(prop, dfTmp, selectedData):
 def assignCode(dbsConfig):
     """Assigns code to molecules with selected data.
     1. Reads file that maps molecule code to SMILES (if it exists),
-    and assigns these code to molecules.
+    and assigns the codes to molecules.
     2. Create new code for the remaining molecules.
 
     :param dbsConfig: (dbsConfiguration object) DBS configuration object.
@@ -632,15 +641,21 @@ def assignCode(dbsConfig):
     allSelectedData = IO.openSelectedDataFile(dbsConfig)
 
     fileName = dbsConfig.getOutFileName('codSmilesMap')
-    codSmilesMap = pd.DataFrame(columns=['code', 'smiles'])
+    columns = ['code', 'smiles', 'eps']
+    codSmilesMap = pd.DataFrame(columns=columns)
     if os.path.exists(fileName):
-        codSmilesMap = IO.readCodSmilesMap(fileName)
+        codSmilesMap = IO.readCidSmilesMap(fileName, columns)
+
+    # set all codes to empty strings
+    for smiles in allSelectedData:
+        selectedData = allSelectedData[smiles]
+        selectedData.code = ''
 
     # List of already used molecule codes.
     usedCodes = []
 
+    # assign provided code
     if codSmilesMap.shape[0] != 0:
-
         # canonicalize SMILES strings.
         for idx, row in codSmilesMap.iterrows():
             smiles = row['smiles']
@@ -654,9 +669,19 @@ def assignCode(dbsConfig):
 
             if row.shape[0] != 0:
                 code = row['code'].values[0]
+                eps = row['eps'].values[0]
                 selectedData.code = code
 
                 usedCodes.append(code)
+                if np.isnan(eps):
+                    print(type(eps), eps)
+                if (not np.isnan(eps)) and (not selectedData.eps_src) or (selectedData.eps_src == '-'):
+                    selectedData.eps = eps
+                    selectedData.eps_src = '-'
+                # print('{:6} {} {}'.format(code, smiles, selectedData.eps))
+
+    # add all code in files to usedCodes
+    usedCodes.extend(codSmilesMap['code'].values)
 
     familyCode = dbsConfig.getFamilyCode()
     family = family_utils.getFamily(familyCode)
@@ -665,10 +690,10 @@ def assignCode(dbsConfig):
     for smiles in allSelectedData:
         selectedData = allSelectedData[smiles]
         code = selectedData.code
-        # print('{:6} {}'.format(code, smiles))
+        # print('{:6} {}'.format(code, smiles, selectedData.eps))
 
-        # if not code:
-        if True:
+        if not code:
+        # if True:
             rdKitMol = Chem.MolFromSmiles(smiles)
             formula = rdMolDescriptors.CalcMolFormula(rdKitMol)
             letter = family.get_letter(smiles)

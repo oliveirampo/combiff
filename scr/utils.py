@@ -55,10 +55,15 @@ def createCod(letter, nC, nX, usedCodes):
 
     run = 1
     run_code = '{}{}{}{}'.format(letter, nC, nX, str(run).zfill(2))
-
+    end_letter = ord('a')
     while run_code in usedCodes:
         run += 1
         run_code = '{}{}{}{}'.format(letter, nC, nX, str(run).zfill(2))
+
+        if run > 99:
+            end_run = '1' + chr(end_letter)
+            run_code = '{}{}{}{}'.format(letter, nC, nX, str(end_run).zfill(2))
+            end_letter += 1
 
     usedCodes.append(run_code)
     return run_code

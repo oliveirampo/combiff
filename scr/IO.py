@@ -18,10 +18,10 @@ import math
 import sys
 import os
 
-from molecule import Molecule
-import myDataStructure
-import myExceptions
-import utils
+from scr.molecule import Molecule
+from scr import myDataStructure
+from scr import myExceptions
+from scr import utils
 
 
 def readFieFile(fileName):
@@ -184,6 +184,9 @@ def read_mtb_file(fileName):
         molecules: (dict) Map of smiles to molecule
     """
 
+    if not os.path.exists(fileName):
+        sys.exit(f'No such file: {fileName}')
+
     with open(fileName, 'r') as f:
         lines = f.readlines()
 
@@ -213,6 +216,8 @@ def read_mtb_file_helper(i, lines):
     data = []
 
     smiles = lines[i + 1].split()[-1]
+    if not lines[i + 1].startswith('# smiles'):
+        smiles = lines[i + 2].strip()
 
     while j < len(lines):
         row = lines[j]
@@ -278,16 +283,17 @@ def openSelectedDataFile(dbsConfig):
     return selectedData
 
 
-def readCodSmilesMap(fileName):
+def readCidSmilesMap(fileName, columns):
     """Reads plain file that maps SMILES to molecule code.
     # Checks if column of SMILES is unique.
     # Checks if column of codes is unique.
 
     :param fileName: (str) Name of file.
+    :param columns: (arr) Name of columns.
     :return:
     """
 
-    df = pd.read_csv(fileName, sep='\s+', names=['code', 'smiles'])
+    df = pd.read_csv(fileName, sep='\s+', names=columns)
 
     # check if columns only have unique values.
     isUnique = df['code'].is_unique
@@ -322,6 +328,7 @@ def writeMolDataFile(dbsConfig):
 
     # write dns, hvp, mlp, blp, tem_cri and eps for SAMOS simulation
     writeMolDat = False
+    # print(propertyList)
     for prop in propertyList:
         if (prop == dnsVariable) or (prop == hvpVariable):
             writeMolDat = True
@@ -347,7 +354,7 @@ def writeMolDataFile(dbsConfig):
                 if dnsVariable in properties:
                     dnsVal = properties[dnsVariable].val[0]
 
-                nC = 1
+                nC = int(code[1]) + int(code[2])
                 kappa = '4.57E-04'
                 eps = selectedData.eps
                 epsSrc = selectedData.eps_src
@@ -362,8 +369,10 @@ def writeMolDataFile(dbsConfig):
 
                 dnsVal = float(dnsVal)
 
-                out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
-                          .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
+                # out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
+                #           .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
+                out.write('{:6} {:8.2f} {:2} {:10} {:10} {:6} {:6} {:8} {}\n'
+                          .format(code, dnsVal, nC, eps, kappa, propTem, propPre, propVal, smiles))
 
 
 def organizeValues(prop1, prop2):
@@ -554,11 +563,11 @@ def writeDnsHvpDataHelper(code, jobLetter, smiles, preDns, temDns, runDns, valDn
     valDns = float(valDns)
     valHvp = float(valHvp)
 
-    outFile.write('{:5}{} {:14} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:3} {:8.2f} {:6} {:6} {} {:>6}\n'
+    outFile.write('{:5}{} {:18} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:3} {:8.2f} {:6} {:6} {} {:>6}\n'
                   .format(code, chr(jobLetter), smiles, 1.0, preDns, temDns, runDns, valDns, runHvp, valHvp,
                           mlp, blp, tem_cri, eps))
 
-    srcFile.write('{:5}{} {:14} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:8} {:3} {:8.2f} {:8} {:6} {:8} {:6} '
+    srcFile.write('{:5}{} {:18} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:8} {:3} {:8.2f} {:8} {:6} {:8} {:6} '
                   '{:8} {:6} {:8} {} {:8}\n'
                   .format(code, chr(jobLetter), smiles, 1.0, preDns, temDns, runDns, valDns, srcDns, runHvp,
                           valHvp, srcHvp, mlp, mlpSrc, blp, blpSrc, tem_cri, tem_criSrc, eps, epsSrc))
@@ -637,3 +646,25 @@ def write_mtb_file(title_block, data, file_name):
             mol_block = data[smiles]
             for row in mol_block:
                 out.write(row)
+
+
+def update_code_in_mtb_file(dbsConfig):
+    allSelectedData = openSelectedDataFile(dbsConfig)
+    output_file_name = 'out/mol_CG.mtb'
+
+    # Get building blocks
+    title_block, molecules_block = read_mtb_file(output_file_name)
+    for smiles in molecules_block:
+        selectedData = allSelectedData[smiles]
+
+        block = molecules_block[smiles]
+        i = 0
+        while i < len(block):
+            row = block[i]
+            if row.startswith('# RNME'):
+                block[i + 1] = selectedData.code + '\n'
+                i = len(block)
+
+            i += 1
+
+    write_mtb_file(title_block, molecules_block, output_file_name)
