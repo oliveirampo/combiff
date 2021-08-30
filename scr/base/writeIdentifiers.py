@@ -10,10 +10,10 @@ import sys
 import os
 
 
-from scr.molecule import moleculeDecoder
-from scr import myExceptions
-from scr import utils
-from scr import IO
+from scr.base.molecule import moleculeDecoder
+from scr.base import myExceptions
+from scr.base import utils
+from scr.base import IO
 
 
 def run():

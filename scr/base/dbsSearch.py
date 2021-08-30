@@ -22,11 +22,11 @@ import sys
 import os
 
 
-from scr import getIdentifiers
-from scr import myExceptions
-from scr import dbsSearch
-from scr import utils
-from scr import dbs
+from scr.base import getIdentifiers
+from scr.base import myExceptions
+from scr.base import dbsSearch
+from scr.base import utils
+from scr.base import dbs
 
 
 

@@ -29,7 +29,7 @@ import numpy as np
 import sys
 
 
-from scr import myExceptions
+from scr.base import myExceptions
 
 
 def checkPressure(col, data, defaultPressure):

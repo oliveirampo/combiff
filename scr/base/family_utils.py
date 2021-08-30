@@ -7,7 +7,7 @@ Methods:
 
 import sys
 
-from scr import family
+from scr.base import family
 
 
 def initFamilies():

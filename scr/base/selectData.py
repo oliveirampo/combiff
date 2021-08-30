@@ -23,24 +23,15 @@ import numpy as np
 import sys
 import os
 
-# from dbsRelation import getUnit
-# import myDataStructure
-# import myExceptions
-# import family_utils
-# import dbsSearch
-# import plotData
-# import utils
-# import dbs
-# import IO
-from scr.dbsRelation import getUnit
-from scr import myDataStructure
-from scr import myExceptions
-from scr import family_utils
-from scr import dbsSearch
-from scr import plotData
-from scr import utils
-from scr import dbs
-from scr import IO
+from scr.base.dbsRelation import getUnit
+from scr.base import myDataStructure
+from scr.base import myExceptions
+from scr.base import family_utils
+from scr.base import dbsSearch
+from scr.base import plotData
+from scr.base import utils
+from scr.base import dbs
+from scr.base import IO
 
 
 def manualSelection(dbsConfig):

@@ -18,10 +18,10 @@ import math
 import sys
 import os
 
-from scr.molecule import Molecule
-from scr import myDataStructure
-from scr import myExceptions
-from scr import utils
+from scr.base.molecule import Molecule
+from scr.base import myDataStructure
+from scr.base import myExceptions
+from scr.base import utils
 
 
 def readFieFile(fileName):
