@@ -53,10 +53,14 @@ def run(dbsConfig):
         raise myExceptions.ArgError(4, nArgs)
 
     # flsFile = sys.argv[2]
-    fieFile = sys.argv[2]
+    molFile = sys.argv[2]
     cidSmilesFile = sys.argv[3]
 
-    isomers = IO.readFieFile(fieFile)
+    if molFile.endswith('.fie'):
+        isomers = IO.readFieFile(molFile)
+    else:
+        isomers = IO.readXmlFile(molFile)
+
     # molecules = IO.readFlsFile(flsFile, isomers)
     molecules = getMolecules(isomers)
 

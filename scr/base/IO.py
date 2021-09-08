@@ -22,6 +22,28 @@ from scr.base.molecule import Molecule
 from scr.base import myDataStructure
 from scr.base import myExceptions
 from scr.base import utils
+import xml.etree.ElementTree as ET
+
+
+def readXmlFile(fileName):
+    """Reads family isomer enumeration (fie) file.
+
+    :param fileName: (str) File name.
+    :return:
+        df: (pandas DataFrame) Table with ENU code, molecular formula and SMILEs string.
+    """
+
+    tree = ET.parse(fileName)
+    root = tree.getroot()
+
+    data = [[isomer.get('isomer_id'), isomer_list.get('formula'), isomer.find('constitutional_SMILES').text]
+            for isomer_lists in root.findall('isomer_lists')
+            for isomer_list in isomer_lists.findall('isomer_list')
+            for isomer in isomer_list.findall('isomer')]
+
+    df = pd.DataFrame(data, columns=['nam', 'frm', 'smiles'])
+
+    return df
 
 
 def readFieFile(fileName):
