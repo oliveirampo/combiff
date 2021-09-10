@@ -363,8 +363,9 @@ def writeMolDataFile(dbsConfig):
 
     # write dns, hvp, eps, and prop for GROMOS simulation.
     for prop in propertyList:
-        fileName = 'out/mol_{}.exp'.format(prop)
-        with open(fileName, 'w') as out:
+        expFileName = 'out/mol_{}.exp'.format(prop)
+        srcFileName = 'out/mol_{}.src'.format(prop)
+        with open(expFileName, 'w') as expOut, open(srcFileName, 'w') as srcOut:
 
             for smiles in allSelectedData:
                 selectedData = allSelectedData[smiles]
@@ -388,13 +389,17 @@ def writeMolDataFile(dbsConfig):
                 propPre = properties[prop].pre[0]
                 propTem = properties[prop].tem[0]
                 propVal = properties[prop].val[0]
+                propSrc = properties[prop].src[0]
 
                 dnsVal = float(dnsVal)
 
                 # out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
                 #           .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
-                out.write('{:6} {:8.2f} {:2} {:10} {:10} {:6} {:6} {:8} {}\n'
+                expOut.write('{:6} {:8.2f} {:2} {:10} {:10} {:6} {:6} {:8} {}\n'
                           .format(code, dnsVal, nC, eps, kappa, propTem, propPre, propVal, smiles))
+
+                srcOut.write('{:6} {:6} {:6} {:8} {}\n'
+                             .format(code, propTem, propPre, propVal, propSrc))
 
 
 def organizeValues(prop1, prop2):
