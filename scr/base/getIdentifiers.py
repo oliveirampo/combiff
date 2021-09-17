@@ -21,13 +21,13 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from molecule import moleculeEncoder
-from molecule import moleculeDecoder
-from molecule import Molecule
-import molecule
-import myExceptions
-import utils
-import IO
+from scr.base.molecule import moleculeEncoder
+from scr.base.molecule import moleculeDecoder
+from scr.base.molecule import Molecule
+from scr.base import molecule
+from scr.base import myExceptions
+from scr.base import utils
+from scr.base import IO
 
 
 def run(dbsConfig):
@@ -53,10 +53,14 @@ def run(dbsConfig):
         raise myExceptions.ArgError(4, nArgs)
 
     # flsFile = sys.argv[2]
-    fieFile = sys.argv[2]
+    molFile = sys.argv[2]
     cidSmilesFile = sys.argv[3]
 
-    isomers = IO.readFieFile(fieFile)
+    if molFile.endswith('.fie'):
+        isomers = IO.readFieFile(molFile)
+    else:
+        isomers = IO.readXmlFile(molFile)
+
     # molecules = IO.readFlsFile(flsFile, isomers)
     molecules = getMolecules(isomers)
 

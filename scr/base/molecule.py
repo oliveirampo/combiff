@@ -11,7 +11,7 @@ Methods:
 
 import json
 
-import utils
+from scr.base import utils
 
 
 class Molecule:

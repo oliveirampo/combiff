@@ -33,13 +33,13 @@ The tables with data from different sources are found in 'wrkDir/tmp/' directory
 
 import sys
 
-import myExceptions
-import getIdentifiers
-import writeIdentifiers
-import dbsSearch
-import selectData
-import plotData
-import IO
+from scr.base import myExceptions
+from scr.base import getIdentifiers
+from scr.base import writeIdentifiers
+from scr.base import dbsSearch
+from scr.base import selectData
+from scr.base import plotData
+from scr.base import IO
 
 
 def main():
@@ -62,6 +62,10 @@ def main():
         elif job == '-searchProp':
             dbsSearch.run(dbsConfig)
 
+        elif job == '-searchPropAlternative':
+            alternative_directory = 'tmp2'
+            dbsSearch.runAlternative(dbsConfig, alternative_directory)
+
         elif job == '-selectData':
             selectData.manualSelection(dbsConfig)
 
@@ -79,6 +83,12 @@ def main():
 
         elif job == '-writeOutputFiles':
             IO.writeMolDataFile(dbsConfig)
+
+        elif job == '-saveMoleculeFile':
+            IO.write_selected_molecule_file(dbsConfig)
+
+        elif job == '-updateCodeInMTBFile':
+            IO.update_code_in_mtb_file(dbsConfig)
 
         else:
             print('Option not implemented: {}'.format(job))

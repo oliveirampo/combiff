@@ -18,10 +18,32 @@ import math
 import sys
 import os
 
-from molecule import Molecule
-import myDataStructure
-import myExceptions
-import utils
+from scr.base.molecule import Molecule
+from scr.base import myDataStructure
+from scr.base import myExceptions
+from scr.base import utils
+import xml.etree.ElementTree as ET
+
+
+def readXmlFile(fileName):
+    """Reads family isomer enumeration (fie) file.
+
+    :param fileName: (str) File name.
+    :return:
+        df: (pandas DataFrame) Table with ENU code, molecular formula and SMILEs string.
+    """
+
+    tree = ET.parse(fileName)
+    root = tree.getroot()
+
+    data = [[isomer.get('isomer_id'), isomer_list.get('formula'), isomer.find('constitutional_SMILES').text]
+            for isomer_lists in root.findall('isomer_lists')
+            for isomer_list in isomer_lists.findall('isomer_list')
+            for isomer in isomer_list.findall('isomer')]
+
+    df = pd.DataFrame(data, columns=['nam', 'frm', 'smiles'])
+
+    return df
 
 
 def readFieFile(fileName):
@@ -36,10 +58,14 @@ def readFieFile(fileName):
         raise myExceptions.NoFile(fileName)
     # df = pd.read_csv(fileName, sep='\s+', comment='#', names=['nam', 'frm', 'smiles'])
     df = pd.read_csv(fileName, sep='\s+', names=['nam', 'frm', 'smiles'])
+
+    df = df[~df['nam'].str.startswith('#')]
+    df.reset_index(inplace=True, drop=True)
+
     return df
 
 
-def readFlsFile(fileName, isomers):
+def readFlsFile_old(fileName, isomers):
     """Reads molecule file (fls file).
 
     :param fileName: (str) File name.
@@ -91,6 +117,47 @@ def readFlsFile(fileName, isomers):
     return molecules
 
 
+def readFlsFile(fileName):
+    """Reads molecule file (fls file).
+
+    :param fileName: (str) File name.
+    :return:
+        molecules: (dict) Map of smiles to molecule.
+    """
+
+    with open(fileName, 'r') as f:
+        lines = f.readlines()
+
+    lines = [row.strip().split() for row in lines]
+
+    molecules = {}
+    for i in range(len(lines)):
+        if not lines[i]:
+            continue
+
+        if lines[i][0] == '#':
+
+            # couldn't find a decomposition
+            if len(lines[i]) > 2 and lines[i][1] == "couldn\'t":
+                smiles = lines[i][6]
+                mol = Molecule(smiles, '', '', '', 0, [], 0, '')
+                molecules[smiles] = mol
+
+            else:
+                continue
+
+        if lines[i][0][0] == '#':
+            continue
+
+        if lines[i][0] == 'NEWMOLECULE':
+            pos = i + 1
+            mol = readFlsFile_helper(pos, lines)
+
+            molecules[mol.smiles] = mol
+
+    return molecules
+
+
 def readFlsFile_helper(pos, data):
     """Helper function to read fls file.
 
@@ -129,6 +196,62 @@ def readFlsFile_helper(pos, data):
             frg_2 = data[i][2]
             lnk = data[i][3]
             links.append([frg_1, frg_2, lnk])
+
+
+def read_mtb_file(fileName):
+    """Reads MTB file.
+
+    :param fileName: (str) File name.
+    :return:
+        molecules: (dict) Map of smiles to molecule
+    """
+
+    if not os.path.exists(fileName):
+        sys.exit(f'No such file: {fileName}')
+
+    with open(fileName, 'r') as f:
+        lines = f.readlines()
+
+    i = 0
+    molecules = {}
+    while i < len(lines):
+        row = lines[i]
+
+        if row.startswith('TITLE'):
+            title_block = lines[:9]
+            i = 9
+            if title_block[-1].strip() != 'END':
+                sys.exit('TITLE block is not correct.')
+
+        elif row.startswith('MTBUILDBLSOLUTE'):
+            i, smiles, mol_block = read_mtb_file_helper(i, lines)
+            molecules[smiles] = mol_block
+
+        else:
+            sys.exit('Beginning of row not supported: {}'.format(row))
+
+    return title_block, molecules
+
+
+def read_mtb_file_helper(i, lines):
+    j = i
+    data = []
+
+    smiles = lines[i + 1].split()[-1]
+    if not lines[i + 1].startswith('# smiles'):
+        smiles = lines[i + 2].strip()
+
+    while j < len(lines):
+        row = lines[j]
+
+        if row.startswith('END'):
+            i = j + 1
+            j = len(lines)
+
+        data.append(row)
+        j += 1
+
+    return i, smiles, data
 
 
 def readCiDSmilesFile(fileName):
@@ -182,16 +305,17 @@ def openSelectedDataFile(dbsConfig):
     return selectedData
 
 
-def readCodSmilesMap(fileName):
+def readCidSmilesMap(fileName, columns):
     """Reads plain file that maps SMILES to molecule code.
     # Checks if column of SMILES is unique.
     # Checks if column of codes is unique.
 
     :param fileName: (str) Name of file.
+    :param columns: (arr) Name of columns.
     :return:
     """
 
-    df = pd.read_csv(fileName, sep='\s+', names=['code', 'smiles'])
+    df = pd.read_csv(fileName, sep='\s+', names=columns)
 
     # check if columns only have unique values.
     isUnique = df['code'].is_unique
@@ -226,6 +350,7 @@ def writeMolDataFile(dbsConfig):
 
     # write dns, hvp, mlp, blp, tem_cri and eps for SAMOS simulation
     writeMolDat = False
+    # print(propertyList)
     for prop in propertyList:
         if (prop == dnsVariable) or (prop == hvpVariable):
             writeMolDat = True
@@ -238,8 +363,9 @@ def writeMolDataFile(dbsConfig):
 
     # write dns, hvp, eps, and prop for GROMOS simulation.
     for prop in propertyList:
-        fileName = 'out/mol_{}.exp'.format(prop)
-        with open(fileName, 'w') as out:
+        expFileName = 'out/mol_{}.exp'.format(prop)
+        srcFileName = 'out/mol_{}.src'.format(prop)
+        with open(expFileName, 'w') as expOut, open(srcFileName, 'w') as srcOut:
 
             for smiles in allSelectedData:
                 selectedData = allSelectedData[smiles]
@@ -251,7 +377,7 @@ def writeMolDataFile(dbsConfig):
                 if dnsVariable in properties:
                     dnsVal = properties[dnsVariable].val[0]
 
-                nC = 1
+                nC = int(code[1]) + int(code[2])
                 kappa = '4.57E-04'
                 eps = selectedData.eps
                 epsSrc = selectedData.eps_src
@@ -263,11 +389,17 @@ def writeMolDataFile(dbsConfig):
                 propPre = properties[prop].pre[0]
                 propTem = properties[prop].tem[0]
                 propVal = properties[prop].val[0]
+                propSrc = properties[prop].src[0]
 
                 dnsVal = float(dnsVal)
 
-                out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
-                          .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
+                # out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
+                #           .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
+                expOut.write('{:6} {:8.2f} {:2} {:10} {:10} {:6} {:6} {:8} {}\n'
+                          .format(code, dnsVal, nC, eps, kappa, propTem, propPre, propVal, smiles))
+
+                srcOut.write('{:6} {:6} {:6} {:8} {}\n'
+                             .format(code, propTem, propPre, propVal, propSrc))
 
 
 def organizeValues(prop1, prop2):
@@ -458,11 +590,108 @@ def writeDnsHvpDataHelper(code, jobLetter, smiles, preDns, temDns, runDns, valDn
     valDns = float(valDns)
     valHvp = float(valHvp)
 
-    outFile.write('{:5}{} {:14} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:3} {:8.2f} {:6} {:6} {} {:>6}\n'
+    outFile.write('{:5}{} {:18} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:3} {:8.2f} {:6} {:6} {} {:>6}\n'
                   .format(code, chr(jobLetter), smiles, 1.0, preDns, temDns, runDns, valDns, runHvp, valHvp,
                           mlp, blp, tem_cri, eps))
 
-    srcFile.write('{:5}{} {:14} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:8} {:3} {:8.2f} {:8} {:6} {:8} {:6} '
+    srcFile.write('{:5}{} {:18} {:3} {:8.3f} {:6.2f} {:3} {:8.2f} {:8} {:3} {:8.2f} {:8} {:6} {:8} {:6} '
                   '{:8} {:6} {:8} {} {:8}\n'
                   .format(code, chr(jobLetter), smiles, 1.0, preDns, temDns, runDns, valDns, srcDns, runHvp,
                           valHvp, srcHvp, mlp, mlpSrc, blp, blpSrc, tem_cri, tem_criSrc, eps, epsSrc))
+
+
+def write_selected_molecule_file(dbsConfig):
+    inpFileName = dbsConfig.getOutFileName('inpMoleculeFile')
+    outFileName = dbsConfig.getOutFileName('outMoleculeFile')
+    fileExtension = outFileName.split('.')[-1]
+
+    if fileExtension == 'fls':
+        molecules = readFlsFile(inpFileName)
+
+    elif fileExtension == 'mtb':
+        title_block, molecules = read_mtb_file(inpFileName)
+
+    else:
+        sys.exit('File extension not supported: {}'.format(fileExtension))
+
+    # get selected molecules
+    selected_molecules = {}
+
+    allSelectedData = openSelectedDataFile(dbsConfig)
+    for smiles in allSelectedData:
+        selected_molecules[smiles] = molecules[smiles]
+
+    if fileExtension == 'fls':
+        write_fls(selected_molecules, outFileName)
+    elif fileExtension == 'mtb':
+        write_mtb_file(title_block, selected_molecules, outFileName)
+
+
+def write_fls(data, file_name):
+    """Write molecule file (file.mtb)"""
+    with open(file_name, 'w') as out:
+        for smiles in data:
+            mol = data[smiles]
+
+            if mol.num_frags == 0:
+                out.write("# couldn't find a decomposition for {} with the given fragments\n#\n".format(smiles))
+
+            else:
+                out.write('#\nNEWMOLECULE\n#\n')
+
+                out.write('\tNAME\t{}\n'.format(mol.smiles))
+                out.write('\tCODE\t{}\n'.format(mol.code))
+                out.write('\tCAS\t******\n'.format(mol.cas))
+
+                out.write('\tNUMFRAGS\t{}\n'.format(mol.num_frags))
+                out.write('\t#\tidx\tfrg\n')
+                for idx, frag in mol.frags:
+                    out.write('\tFRAG\t{}\t{}\n'.format(idx, frag))
+
+                out.write('\tNUMLINKS\t{}\n'.format(mol.num_links))
+                if mol.num_links != 0:
+                    out.write('\t#\tfrg1\tfrg2\tlnkatms\n')
+                    for frg_1, frg_2, lnk in mol.links:
+                        out.write('\tLINK\t{}\t{}\t{}\n'.format(frg_1, frg_2, lnk))
+
+                out.write('#\nENDMOLECULE\n#\n')
+
+
+def write_mtb_file(title_block, data, file_name):
+    """Write mtb file
+
+    :param title_block: (arr) Title block of MTB file.
+    :param data: (arr) MTBUILDBLSOLUTE blocks of data
+    :param file_name: (str)
+    """
+
+    with open(file_name, 'w') as out:
+        for row in title_block:
+            out.write(row)
+
+        for smiles in data:
+            mol_block = data[smiles]
+            for row in mol_block:
+                out.write(row)
+
+
+def update_code_in_mtb_file(dbsConfig):
+    allSelectedData = openSelectedDataFile(dbsConfig)
+    output_file_name = 'out/mol_CG.mtb'
+
+    # Get building blocks
+    title_block, molecules_block = read_mtb_file(output_file_name)
+    for smiles in molecules_block:
+        selectedData = allSelectedData[smiles]
+
+        block = molecules_block[smiles]
+        i = 0
+        while i < len(block):
+            row = block[i]
+            if row.startswith('# RNME'):
+                block[i + 1] = selectedData.code + '\n'
+                i = len(block)
+
+            i += 1
+
+    write_mtb_file(title_block, molecules_block, output_file_name)

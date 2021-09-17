@@ -23,11 +23,11 @@ import numpy as np
 import sys
 import os
 
-import highlight_points
-import selectData
-import dbsSearch
-import dbs
-import IO
+from scr.base import highlight_points
+from scr.base import selectData
+from scr.base import dbsSearch
+from scr.base import dbs
+from scr.base import IO
 
 
 def select_data(fig, ax, x_values, y_values):
