@@ -9,6 +9,7 @@ ca-certificates           2021.5.30            ha878542_0    conda-forge
 cairo                     1.16.0               hf32fb01_1  
 certifi                   2021.5.30        py37h89c1867_0    conda-forge
 cycler                    0.10.0                     py_2    conda-forge
+dbs-etl                   1.0                       dev_0    <develop>
 dbus                      1.13.6               he372182_0    conda-forge
 expat                     2.4.1                h9c3ff4c_0    conda-forge
 fontconfig                2.13.1               h6c09931_0  

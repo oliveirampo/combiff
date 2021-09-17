@@ -695,7 +695,6 @@
       "var": "dns",
       "tem": "tem",
       "pre": "pre",
-      "prop_convert": "100",
       "col": "@col rec cid tem pre dns err phase ref fil pfn",
       "marker": "^",
       "color": "navy"
@@ -757,21 +756,97 @@
       "color": "navy"
     }
   },
-  "ZA10.2": {
+    "DE19.1": {
     "__type__": "dbsEntry",
-    "larsCode": "ZA10.2",
+    "larsCode": "DE19.1",
     "cpd": {
       "rel": "cpd",
       "var": "cid",
-      "col": "@col rec cid nam frm cas pid"
+      "col": "@col rec cid cas frm nam syn pid"
+    },
+    "mlp": {
+      "rel": "mlp",
+      "var": "tem",
+      "col": "@col rec cid tem rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "blp": {
+      "rel": "blp",
+      "var": "tem",
+      "col": "@col rec cid tem rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "tem_cri": {
+      "rel": "tem_cri",
+      "var": "tem",
+      "col": "@col rec cid tem rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "dns": {
+      "rel": "dns",
+      "var": "dns",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid dns tem pre err_dns err_tem err_pre phase rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "hvp": {
+      "rel": "hvp",
+      "var": "hvp",
+      "tem": "tem",
+      "pre": "pre",
+      "prop_convert": "0.001",
+      "col": "@col rec cid hvp tem pre err_hvp err_tem err_pre phase rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "gam": {
+      "rel": "gam",
+      "var": "gam",
+      "tem": "tem",
+      "pre": "pre",
+      "prop_convert": "1000",
+      "col": "@col rec cid gam tem pre err_gam err_tem err_pre phase rid pfn",
+      "marker": "v",
+      "color": "orange"
     },
     "hcp": {
       "rel": "hcp",
       "var": "hcp",
-      "eqn": "hcp_123",
-      "col": "@col rec cid tem_cri tem_min_1 tem_max_1 a_hcp_1 b_hcp_1 c_hcp_1 d_hcp_1 err_hcp_1 tem_min_2 tem_max_2 a_hcp_2 b_hcp_2 c_hcp_2 d_hcp_2 err_hcp_2 tem_min_3 tem_max_3 a_hcp_3 b_hcp_3 c_hcp_3 d_hcp_3 e_hcp_3 f_hcp_3 err_hcp_3 pid",
-      "marker": ".",
-      "color": "magenta"
+      "tem": "tem",
+      "col": "@col rec cid hcp tem err_hcp err_tem phase rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "eps": {
+      "rel": "eps",
+      "var": "eps",
+      "tem": "tem",
+      "col": "@col rec cid eps tem err_eps err_tem phase rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "etd": {
+      "rel": "etd",
+      "var": "etd",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col rec cid etd tem pre err_etd err_tem err_pre phase rid pfn",
+      "marker": "v",
+      "color": "orange"
+    },
+    "TODO": {
+      "rel": "",
+      "var": "",
+      "tem": "tem",
+      "pre": "pre",
+      "col": "@col ",
+      "marker": "v",
+      "color": "orange"
     }
   }
 }
