@@ -80,8 +80,7 @@ class dbsConfiguration:
             path: (str) Path to tables with data from different sources.
         """
 
-        path = self.config.get('info', 'path')
-        return path
+        return self.config.get('info', 'path')
 
     def getDbsFileName(self):
         """Returns name of DNS json file (dbs.jon),
@@ -130,6 +129,16 @@ class dbsConfiguration:
         val = self.config.get('defaultValues', 'temperature')
         val = float(val)
         return val
+
+    def getSolventPropCode(self):
+        return self.config.get('solvents', 'prop_code')
+
+    def getSolventList(self):
+        solvents = self.config.get('solvents', 'solvent_list')
+        return solvents.split()
+
+    def getSolventName(self, solvent_code):
+        return self.config.get('solvent_code', solvent_code)
 
     def getVariable(self, propName):
         """Returns code given property defined in globalVariables section.
@@ -287,7 +296,6 @@ def getCids(dbsConfig, dbsEntries, molList, path):
     relations = get_relations(propCod)
 
     for larsCode in relations:
-        # print(larsCode)
         factory = dbsEntries[larsCode].getFactory('cpd')
         parser = factory.getParser()
         dfTable = parser.readRelation(path)
@@ -299,7 +307,7 @@ def getCids(dbsConfig, dbsEntries, molList, path):
         molList = mergeByCas(larsCode, molList, dfTable)
 
         # print('\tmatch by name')
-        mergeByName(larsCode, molList, dfTable)
+        molList = mergeByName(larsCode, molList, dfTable)
 
     return molList
 
@@ -481,7 +489,11 @@ def getData(dbsEntries, molList, path, propCod):
                     if larsCod in col:
                         keep_columns.append(col)
 
-                tab = pd.merge(molList[keep_columns], dfTable, how='left', left_on=cid, right_on='cid')
+                # for solvation free energy
+                if 'cid' not in dfTable.columns:
+                    tab = pd.merge(molList[keep_columns], dfTable, how='left', left_on=cid, right_on='cid_sol')
+                else:
+                    tab = pd.merge(molList[keep_columns], dfTable, how='left', left_on=cid, right_on='cid')
                 tab = tab.dropna(subset=[cid])
 
                 tab = parser.removeEmptyValues(factory.var, tab)

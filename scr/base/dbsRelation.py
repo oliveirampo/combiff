@@ -170,6 +170,8 @@ def getUnit(prop):
         return dbsSelfDiffusionCoefficient.getUnit()
     elif prop == 'etd':
         return dbsViscosity.getUnit()
+    elif prop == 'dgs':
+        return dbsSolvationFreeEnergy.getUnit()
     else:
         print('No such property: {}'.format(prop))
         sys.exit(1)
@@ -567,3 +569,11 @@ class dbsViscosity(DbsRelation):
     @staticmethod
     def getUnit():
         return r'$\eta \, [10^{-3} \, Pa \cdot s]$'
+
+
+class dbsSolvationFreeEnergy(DbsRelation):
+    """Implements DBS solvation free energy relation for a given source (LARS code)."""
+
+    @staticmethod
+    def getUnit():
+        return r'$\DG_{solv} \/ [kJ \cdot mol^{-1}]$'

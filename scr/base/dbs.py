@@ -659,6 +659,52 @@ class createRelationViscosity(abstractFactoryRelation):
         return [equation.nullEquation(tab)]
 
 
+class createRelationSolvationFreeEnergy(abstractFactoryRelation):
+    """Implements factory to create specific relation.
+
+    Attributes:
+        _dbsRelation: (dbsRelation)
+        _parser: (relationParser)
+    Functions:
+        createRelation()
+        createParser()
+        createEquations(tab)
+    """
+
+    def __init__(self, larsCode, prop, rel, var, col, pre, tem, eqn, fid, met, prop_convert, tem_convert, pre_convert,
+                 marker, color):
+
+        self._dbsRelation = dbsRelation.dbsSolvationFreeEnergy(larsCode, prop, rel, var, col, pre, tem, fid, met,
+                                                               prop_convert, tem_convert, pre_convert, marker, color)
+
+        self._parser = dbsIO.parserDefault(larsCode, rel, col)
+
+        super().__init__(prop, var, eqn)
+
+    def getRelation(self):
+        """Returns created DBS relation."""
+        return self._dbsRelation
+
+    def getParser(self):
+        """Returns created relationParser"""
+        return self._parser
+
+    def createEquations(self, tab):
+        """Creates and returns list of equations."""
+        if self.eqn == '':
+            return [equation.nullEquation(tab)]
+        elif self.eqn == 'hvp_1':
+            equations = []
+
+            for i in range(tab.shape[0]):
+                newTab = tab.iloc[i].to_frame().T
+                equations.append(equation.hvpEquation1(newTab))
+
+            return equations
+        else:
+            raise myExceptions.EquationNotImplemented(type)
+
+
 class dbsEntry:
     """A dbsEntry corresponds to a LARS code and the relations/tables associated with it.
     For each relation/table there will be one factory method to construct the appropriate object.
@@ -681,7 +727,8 @@ class dbsEntry:
                'hcp': createRelationHeatCapacityAtConstantPressure,
                'eps': createRelationPermittivity,
                'diffus': createRelationSelfDiffusionCoefficient,
-               'etd': createRelationViscosity}
+               'etd': createRelationViscosity,
+               'dgs': createRelationSolvationFreeEnergy}
 
     def __init__(self, larsCode):
         """Constructs all the necessary attributes for this object.

@@ -67,6 +67,102 @@ def manualSelection(dbsConfig):
     plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, properties, propCod, tables, molList,
              allSelectedData, True, True, False, False)
 
+    select_in_solvent(dbsConfig, dbsEntries, defaultPressure, tem_room, propCod, tables, molList, allSelectedData)
+
+
+def select_in_solvent(dbsConfig, dbsEntries, defaultPressure, tem_room, propCod, tables, molList, allSelectedData):
+    prop = dbsConfig.getSolventPropCode()
+    solvents = dbsConfig.getSolventList()
+    smilesVariable = dbsConfig.getVariable('smiles')
+    solvent_cid = get_solvent_cid(dbsConfig, dbsEntries, prop, solvents, propCod)
+
+    for idx, row in molList.iterrows():
+        smiles = row[smilesVariable]
+
+        selectedData = myDataStructure.SelectedData(smiles)
+        if smiles in allSelectedData:
+            selectedData = allSelectedData[smiles]
+
+        for code_svt in solvents:
+            data = []
+            src_values = []
+
+            for larsCode in propCod[prop]:
+                if larsCode not in tables[prop]:
+                    continue
+
+                tab = tables[prop][larsCode]
+                tab = tab.loc[tab[smilesVariable] == smiles]
+
+                cid_svt = solvent_cid[code_svt].get(larsCode)
+                tab = tab.loc[tab['cid_svt'] == cid_svt]
+
+                if tab.shape[0] == 0:
+                    continue
+
+                dbsRelation, dbsFactory = getDbsData(prop, larsCode, dbsEntries)
+                if prop in tab:
+                    dat = dbsRelation.getData(tab, defaultPressure)
+
+                    for d in dat:
+                        data.append(d)
+                        src_values.append(larsCode)
+
+            if len(data) != 0:
+                data = np.asarray(data)
+
+                selectedPointsMask = np.asarray([True for i in src_values])
+                pre = data[:, 0]
+                tem = data[:, 1]
+                val = data[:, 2]
+                src = np.asarray(src_values)
+                fid = np.asarray(['%' for i in src_values])
+                met = np.asarray(['%' for i in src_values])
+
+                current_property = myDataStructure.Property(code_svt, pre, tem, val, src, fid, met)
+                selectedData.addProperty(code_svt, current_property)
+                # selectedData.appendProperty(code_svt, selectedPointsMask, x_values, y_values, pre_values, src_values,
+                #                             fid_values, met_values)
+
+                # write to json file
+                allSelectedData[smiles] = selectedData
+                IO.writeSelectedDataToJson(dbsConfig, allSelectedData)
+
+
+def get_solvent_cid(dbsConfig, dbsEntries, prop, solvents, propCod):
+    """Get cid of solvents in DBS tables.
+
+    Args:
+        dbsConfig:
+        dbsEntries:
+        prop:
+        solvents:
+        propCod:
+
+    Returns:
+
+    """
+
+    solvent_cid = {}
+    path = dbsConfig.getPath()
+    for code_svt in solvents:
+        solvent_cid[code_svt] = {}
+
+    for larsCode in propCod[prop]:
+        factory = dbsEntries[larsCode].getFactory('cpd')
+        parser = factory.getParser()
+        dfTable = parser.readRelation(path)
+
+        for code_svt in solvents:
+            svt_name = dbsConfig.getSolventName(code_svt)
+
+            cid = dfTable.loc[dfTable['nam'] == svt_name]['cid'].values
+            if len(cid) == 1:
+                cid = cid[0]
+                solvent_cid[code_svt][larsCode] = cid
+
+    return solvent_cid
+
 
 def plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, properties, propCod, tables, molList,
              allSelectedData, isSelectData, isWriteData, isSavePlot, isPlotSim):
@@ -133,7 +229,7 @@ def plotValues(dbsConfig, dbsEntries, defaultPressure, tem_room, nPoints, proper
                     continue
 
                 tab = tables[prop][larsCode]
-                tab = tab.loc[tab['smiles'] == smiles]
+                tab = tab.loc[tab[smilesVariable] == smiles]
 
                 if tab.shape[0] == 0:
                     continue
@@ -560,8 +656,8 @@ def getSelectedData(dbsConfig):
             fid = dns.shape[0] * ['']
             met = dns.shape[0] * ['']
 
-            property = myDataStructure.Property('dns', pre, tem, dns, src, fid, met)
-            selectedData.addProperty('dns', property)
+            current_property = myDataStructure.Property('dns', pre, tem, dns, src, fid, met)
+            selectedData.addProperty('dns', current_property)
 
         data = dfTmp[dfTmp['hvp'].astype(str) != '%']
         data = data[data['hvp'].astype(str) != '-']

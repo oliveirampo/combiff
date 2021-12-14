@@ -396,7 +396,7 @@ def writeMolDataFile(dbsConfig):
                 # out.write('{:6} {:2} {:6} {:6} {:10} {:8} {:8.2f} {:8} {}\n'
                 #           .format(code, nC, propPre, propTem, eps, kappa, dnsVal, propVal, smiles))
                 expOut.write('{:6} {:8.2f} {:2} {:10} {:10} {:6} {:6} {:8} {}\n'
-                          .format(code, dnsVal, nC, eps, kappa, propTem, propPre, propVal, smiles))
+                             .format(code, dnsVal, nC, eps, kappa, propTem, propPre, propVal, smiles))
 
                 srcOut.write('{:6} {:6} {:6} {:8} {}\n'
                              .format(code, propTem, propPre, propVal, propSrc))
